@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Producción Diaria — Sánchez Pharma</title>
+<style>
+:root{
+  --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --color-background-primary:#ffffff;
+  --color-background-secondary:#f4f6f9;
+  --color-text-primary:#18202d;
+  --color-text-secondary:#6b7280;
+  --color-border-tertiary:#e2e6ec;
+  --border-radius-md:8px;
+  --border-radius-lg:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:#edf0f5}
+
+/* TAB NAV */
+.tab-bar{display:flex;align-items:center;gap:6px;padding:8px 1.2rem;background:#fff;
+  border-bottom:1px solid var(--color-border-tertiary);position:sticky;top:0;z-index:20}
+.tab-btn{padding:5px 14px;border-radius:6px;border:1px solid transparent;background:transparent;
+  font-size:12px;font-weight:500;cursor:pointer;color:var(--color-text-secondary);transition:all .14s}
+.tab-btn:hover{background:#f0f3f7}
+.tab-btn.active{background:#eef4ff;border-color:#c7d9f7;color:#1d4ed8}
+.tab-period{margin-left:auto;font-size:11px;color:var(--color-text-secondary)}
+
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:12px;padding:7px 1.2rem;background:#fff;
+  border-bottom:1px solid var(--color-border-tertiary);flex-wrap:wrap}
+.filter-group{display:flex;align-items:center;gap:5px}
+.filter-lbl{font-size:10px;font-weight:600;color:var(--color-text-secondary);
+  text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.filter-btn{padding:3px 10px;border-radius:5px;border:1px solid var(--color-border-tertiary);
+  background:transparent;font-size:11px;cursor:pointer;color:var(--color-text-secondary);transition:all .12s}
+.filter-btn:hover{border-color:#2563eb;color:#2563eb}
+.filter-btn.on{background:#2563eb;border-color:#2563eb;color:#fff}
+.filter-divider{width:1px;height:18px;background:var(--color-border-tertiary)}
+.filter-result{margin-left:auto;font-size:11px;color:var(--color-text-secondary)}
+
+/* PANES */
+.pane{display:none;padding:1rem 1.2rem}
+.pane.active{display:block}
+
+/* ORIGINAL DASHBOARD STYLES */
+.dash{}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1rem}
+.kpi{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:14px 16px}
+.kpi-label{font-size:11px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.kpi-val{font-size:26px;font-weight:500;color:var(--color-text-primary);line-height:1}
+.kpi-sub{font-size:12px;color:var(--color-text-secondary);margin-top:4px}
+.kpi-sub b{color:#16a34a}
+.charts-main{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:11px;margin-bottom:11px}
+.charts-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-bottom:11px}
+.charts-bottom{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr);gap:11px;margin-bottom:11px}
+.card{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:15px}
+.card-title{font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:11px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:9px;font-size:11px;color:var(--color-text-secondary)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend-dot{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+/* ANALYSIS ROWS (NEW) */
+.charts-analysis{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);gap:11px;margin-bottom:11px}
+
+/* PICKER TABLE */
+.ptable{width:100%;border-collapse:collapse;font-size:11px}
+.ptable th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-secondary);
+  padding:6px 8px;border-bottom:1px solid var(--color-border-tertiary);text-align:left;white-space:nowrap;cursor:pointer}
+.ptable th:hover{color:#1d4ed8}
+.ptable th.sort-asc::after{content:' ▲'}
+.ptable th.sort-desc::after{content:' ▼'}
+.ptable td{padding:7px 8px;border-bottom:.5px solid var(--color-border-tertiary);vertical-align:middle}
+.ptable tr:last-child td{border-bottom:none}
+.ptable tr:hover td{background:#f8faff}
+.picker-name{font-weight:600;color:var(--color-text-primary)}
+.sla-bar-wrap{display:flex;align-items:center;gap:6px}
+.sla-bar{height:8px;border-radius:4px;background:#e2e8f0;flex:1;overflow:hidden}
+.sla-fill{height:100%;border-radius:4px;background:#16a34a}
+.sla-fill.warn{background:#f59e0b}
+.sla-fill.crit{background:#ef4444}
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.badge.ok{background:#dcfce7;color:#15803d}
+.badge.warn{background:#fef9c3;color:#a16207}
+.badge.crit{background:#fee2e2;color:#b91c1c}
+
+/* UPLOAD PANE */
+.upl-wrap{max-width:560px;margin:1.5rem auto}
+.drop-zone{border:2px dashed #c7d9f7;border-radius:12px;padding:2.5rem 2rem;text-align:center;
+  cursor:pointer;transition:all .18s;background:#f8fbff}
+.drop-zone:hover,.drop-zone.over{border-color:#2563eb;background:#eef4ff}
+.drop-icon{font-size:2.4rem;margin-bottom:.7rem}
+.drop-ttl{font-size:14px;color:var(--color-text-primary);margin-bottom:3px}
+.drop-sub{font-size:11px;color:var(--color-text-secondary)}
+#fileInput{display:none}
+.status-box{display:none;margin-top:1rem;padding:.8rem 1rem;border-radius:8px;
+  background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);font-size:12px}
+.status-box.ok{background:#f0fdf4;border-color:#86efac}
+.status-box.err{background:#fef2f2;border-color:#fca5a5}
+.prev-grid{display:none;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:1rem}
+.prev-card{background:var(--color-background-secondary);border:.5px solid var(--color-border-tertiary);
+  border-radius:8px;padding:9px 13px}
+.prev-k{font-size:10px;text-transform:uppercase;color:var(--color-text-secondary);margin-bottom:2px}
+.prev-v{font-size:18px;font-weight:600;color:#1d4ed8}
+.act-row{display:none;gap:8px;margin-top:1rem;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:7px;
+  border:none;font-size:12px;font-weight:500;cursor:pointer;transition:all .14s}
+.btn-p{background:#2563eb;color:#fff}.btn-p:hover{background:#1d4ed8}
+.btn-a{background:#16a34a;color:#fff}.btn-a:hover{background:#15803d}
+.btn-s{background:var(--color-background-secondary);color:var(--color-text-primary);
+  border:1px solid var(--color-border-tertiary)}.btn-s:hover{border-color:#2563eb}
+.info-box{margin-top:1.5rem;padding:.9rem 1rem;background:var(--color-background-secondary);
+  border-radius:8px;border:.5px solid var(--color-border-tertiary);
+  font-size:11px;color:var(--color-text-secondary);line-height:1.9}
+.info-box strong{color:var(--color-text-primary)}
+code{background:#fff;border:1px solid var(--color-border-tertiary);padding:1px 5px;border-radius:4px;font-size:10px}
+</style>
+</head>
+<body>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="goTab('dashboard')">📊 Dashboard</button>
+  <button class="tab-btn" onclick="goTab('cargar')">📂 Cargar Excel</button>
+  <span class="tab-period" id="tab-period">Jun 2026 · 12 días</span>
+</div>
+
+<div class="filter-bar" id="filterBar">
+  <div class="filter-group">
+    <span class="filter-lbl">Mes</span>
+    <div id="mes-btns"></div>
+  </div>
+  <div class="filter-divider"></div>
+  <div class="filter-group">
+    <span class="filter-lbl">Semana</span>
+    <div id="sem-btns" style="display:flex;gap:5px"></div>
+  </div>
+  <span class="filter-result" id="filter-result"></span>
+</div>
+
+<!-- DASHBOARD -->
+<div id="pane-dashboard" class="pane active">
+<div class="dash">
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-label">Total hojas procesadas</div>
+    <div class="kpi-val" id="kv-hojas">—</div>
+    <div class="kpi-sub" id="ks-hojas"></div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Pedidos únicos</div>
+    <div class="kpi-val" id="kv-pedidos">—</div>
+    <div class="kpi-sub" id="ks-pedidos"></div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Leadtime promedio</div>
+    <div class="kpi-val" id="kv-lt">—</div>
+    <div class="kpi-sub" id="ks-lt"></div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Turno mañana</div>
+    <div class="kpi-val" id="kv-man">—</div>
+    <div class="kpi-sub" id="ks-man"></div>
+  </div>
+</div>
+
+<div class="charts-main">
+  <div class="card">
+    <div class="card-title">Producción por picker — hojas pickeadas</div>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:#378ADD"></span>Hojas totales</span>
+      <span><span class="legend-dot" style="background:#1D9E75"></span>Pedidos únicos</span>
+    </div>
+    <div style="position:relative;width:100%;height:230px"><canvas id="c1"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Producción diaria — hojas por fecha</div>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:#BA7517;border-radius:50%"></span>Hojas</span>
+      <span><span class="legend-dot" style="background:#D85A30;border-radius:50%"></span>Pedidos únicos</span>
+    </div>
+    <div style="position:relative;width:100%;height:230px"><canvas id="c2"></canvas></div>
+  </div>
+</div>
+
+<div class="charts-row">
+  <div class="card">
+    <div class="card-title">Leadtime promedio por picker (minutos)</div>
+    <div style="position:relative;width:100%;height:200px"><canvas id="c3"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Distribución turno y cliente</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div>
+        <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:5px">Por turno</div>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#378ADD"></span><span id="leg-man">Mañana</span></span>
+          <span><span class="legend-dot" style="background:#B5D4F4"></span><span id="leg-tar">Tarde</span></span>
+        </div>
+        <div style="position:relative;width:100%;height:140px"><canvas id="c4"></canvas></div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:5px">Por cliente</div>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#1D9E75"></span><span id="leg-ter">Tercero</span></span>
+          <span><span class="legend-dot" style="background:#9FE1CB"></span><span id="leg-loc">Local</span></span>
+        </div>
+        <div style="position:relative;width:100%;height:140px"><canvas id="c5"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="charts-bottom">
+  <div class="card">
+    <div class="card-title">2° filtro — empacado y revisado</div>
+    <div style="position:relative;width:100%;height:180px"><canvas id="c6"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">3° filtro — verificación final</div>
+    <div style="position:relative;width:100%;height:180px"><canvas id="c7"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Hojas por pedido</div>
+    <div class="legend"><span><span class="legend-dot" style="background:#534AB7"></span>N° pedidos</span></div>
+    <div style="position:relative;width:100%;height:160px"><canvas id="c8"></canvas></div>
+  </div>
+</div>
+
+<!-- ANÁLISIS PROFUNDO -->
+<div class="card" style="margin-bottom:11px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+    <div class="card-title" style="margin-bottom:0">📋 Tabla de eficiencia por picker</div>
+    <span style="font-size:10px;color:var(--color-text-secondary)">Clic en columna para ordenar</span>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="ptable" id="pickertable">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">Picker</th>
+          <th onclick="sortTable(1)">Hojas</th>
+          <th onclick="sortTable(2)">Pedidos</th>
+          <th onclick="sortTable(3)">LT prom.</th>
+          <th onclick="sortTable(4)" style="min-width:160px">SLA ≤120min</th>
+          <th onclick="sortTable(5)">Hojas/día</th>
+          <th onclick="sortTable(6)">Turno pred.</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="picker-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="charts-analysis">
+  <div class="card">
+    <div class="card-title">Distribución de leadtime (histograma)</div>
+    <div style="position:relative;width:100%;height:195px"><canvas id="c9"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">% SLA cumplido por picker</div>
+    <div style="position:relative;width:100%;height:195px"><canvas id="c10"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Comparativo semanal</div>
+    <div style="position:relative;width:100%;height:195px"><canvas id="c11"></canvas></div>
+  </div>
+</div>
+
+</div>
+</div><!-- /pane-dashboard -->
+
+<!-- CARGAR EXCEL -->
+<div id="pane-cargar" class="pane">
+  <div class="upl-wrap">
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <div class="drop-icon">📊</div>
+      <div class="drop-ttl">Arrastra el Excel aquí o haz clic para seleccionar</div>
+      <div class="drop-sub">PRODUCCION_DIARIA_*.xlsx &nbsp;·&nbsp; Hoja: <strong>produccion</strong></div>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)">
+    </div>
+    <div id="statusBox" class="status-box"></div>
+    <div id="prevGrid" class="prev-grid"></div>
+    <div id="actRow" class="act-row">
+      <button class="btn btn-p" onclick="applyData('replace')">✅ Aplicar (reemplazar datos)</button>
+      <button class="btn btn-a" onclick="applyData('merge')">🔗 Acumular (agregar a existentes)</button>
+      <button class="btn btn-s" onclick="dlHTML()">⬇️ Descargar HTML actualizado</button>
+    </div>
+    <div class="info-box">
+      <strong>ℹ️ Instrucciones</strong><br>
+      1. El Excel debe tener la hoja <code>produccion</code> con las columnas del ERP<br>
+      2. <strong>Reemplazar</strong>: sustituye todos los datos actuales por los del nuevo Excel<br>
+      3. <strong>Acumular</strong>: agrega las nuevas semanas a los datos históricos ya embebidos<br>
+      4. <strong>Descargar HTML</strong>: genera el archivo actualizado listo para subir a Netlify
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DATOS EMBEBIDOS — columnas: [fecha,pedido,hoja,picker,turno,f2,f3,cliente,lt_min]
+// ---BEGIN_RAW---
+const RAW_DATA = [["2026-06-01",43506,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",32.0],["2026-06-01",43510,1,"YUSID","MAÑANA","YUSID","YUSID","TERCERO",2.0],["2026-06-01",43509,1,"JOSE","MAÑANA","YUSID","YUSID","TERCERO",28.0],["2026-06-01",43513,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",28.0],["2026-06-01",43512,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",28.0],["2026-06-01",43511,1,"YUSID","MAÑANA","YUSID","YUSID","TERCERO",15.0],["2026-06-01",43508,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",24.0],["2026-06-01",43515,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",62.0],["2026-06-01",43518,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",50.0],["2026-06-01",43517,1,"MANUEL","MAÑANA","YUSID","YUSID","TERCERO",38.0],["2026-06-01",43516,1,"MANUEL","MAÑANA","YUSID","YUSID","TERCERO",38.0],["2026-06-01",43520,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",27.0],["2026-06-01",43519,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",26.0],["2026-06-01",43527,1,"YARIDA","MAÑANA","YUSID","YUSID","TERCERO",8.0],["2026-06-01",43525,1,"TABY","MAÑANA","TABY","TABY","TERCERO",14.0],["2026-06-01",43523,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",32.0],["2026-06-01",43528,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",85.0],["2026-06-01",43528,2,"JANETH","MAÑANA","TABY","TABY","TERCERO",89.0],["2026-06-01",43529,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",90.0],["2026-06-01",43531,1,"JANETH","MAÑANA","SHEYLA","SHEYLA","TERCERO",98.0],["2026-06-01",43530,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",101.0],["2026-06-01",43530,2,"YUSID","MAÑANA","TABY","TABY","TERCERO",82.0],["2026-06-01",43377,1,"SHEYLA","MAÑANA","FERNANDA","FERNANDA","TERCERO",37.0],["2026-06-01",43502,1,"SHEYLA","MAÑANA","FERNANDA","FERNANDA","TERCERO",38.0],["2026-06-01",43533,1,"SHEYLA","MAÑANA","FERNANDA","FERNANDA","TERCERO",58.0],["2026-06-01",43536,1,"SHEYLA","MAÑANA","MAURICIO","MAURICIO","TERCERO",158.0],["2026-06-01",43536,2,"SHEYLA","MAÑANA","MAURICIO","MAURICIO","TERCERO",162.0],["2026-06-01",43537,1,"SHEYLA","MAÑANA","MAURICIO","MAURICIO","TERCERO",162.0],["2026-06-01",43553,1,"YARIDA","MAÑANA","MAURICIO","MAURICIO","TERCERO",10.0],["2026-06-01",43546,1,"MAURICIO","TARDE","FERNANDA","FERNANDA","LOCAL",73.0],["2026-06-01",43546,2,"MAURICIO","TARDE","FERNANDA","FERNANDA","LOCAL",124.0],["2026-06-01",43546,3,"SHEYLA","TARDE","FERNANDA","FERNANDA","LOCAL",151.0],["2026-06-01",43547,1,"MAURICIO","TARDE","FERNANDA","FERNANDA","LOCAL",126.0],["2026-06-01",43551,1,"MAURICIO","TARDE","MAURICIO","MAURICIO","LOCAL",219.0],["2026-06-01",43549,1,"MAURICIO","TARDE","FERNANDA","FERNANDA","LOCAL",180.0],["2026-06-01",43549,2,"SHEYLA","TARDE","MAURICIO","MAURICIO","LOCAL",185.0],["2026-06-01",43549,3,"SHEYLA","TARDE","MAURICIO","MAURICIO","LOCAL",202.0],["2026-06-01",43549,4,"SHEYLA","TARDE","MAURICIO","MAURICIO","LOCAL",219.0],["2026-06-01",43549,5,"SHEYLA","TARDE","MAURICIO","MAURICIO","LOCAL",219.0],["2026-06-02",43544,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",42.0],["2026-06-02",43555,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",53.0],["2026-06-02",43554,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",52.0],["2026-06-02",43561,1,"TABY","MAÑANA","TABY","TABY","TERCERO",58.0],["2026-06-02",43563,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",36.0],["2026-06-02",43541,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",39.0],["2026-06-02",43556,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",41.0],["2026-06-02",43560,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",42.0],["2026-06-02",43562,1,"TABY","MAÑANA","TABY","TABY","TERCERO",24.0],["2026-06-02",43564,1,"YUSID","MAÑANA","TABY","TABY","TERCERO",69.0],["2026-06-02",43565,1,"YUSID","MAÑANA","TABY","TABY","TERCERO",70.0],["2026-06-02",43569,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",50.0],["2026-06-02",43674,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",52.0],["2026-06-02",43573,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",14.0],["2026-06-02",43571,1,"JOSE","MAÑANA","YUSID","YUSID","TERCERO",23.0],["2026-06-02",43577,1,"TABY","MAÑANA","YUSID","YUSID","TERCERO",30.0],["2026-06-02",43579,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",54.0],["2026-06-02",43583,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",54.0],["2026-06-02",43581,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",42.0],["2026-06-02",43576,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",51.0],["2026-06-02",43586,1,"TABY","MAÑANA","TABY","TABY","TERCERO",38.0],["2026-06-02",43585,1,"TABY","MAÑANA","TABY","TABY","TERCERO",37.0],["2026-06-02",43588,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",55.0],["2026-06-02",43587,1,"MANUEL","TARDE","SHEYLA","SHEYLA","TERCERO",55.0],["2026-06-02",43558,1,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",74.0],["2026-06-02",43572,1,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",68.0],["2026-06-02",43589,1,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",76.0],["2026-06-02",43588,2,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",48.0],["2026-06-02",43597,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",173.0],["2026-06-02",43601,1,"MAURICIO","TARDE","MAURICIO","MAURICIO","TERCERO",144.0],["2026-06-02",43593,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",21.0],["2026-06-02",43598,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",45.0],["2026-06-02",43599,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",45.0],["2026-06-02",43602,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",25.0],["2026-06-02",43606,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",106.0],["2026-06-02",43606,2,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",110.0],["2026-06-02",43606,3,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",112.0],["2026-06-02",43609,1,"FERNANDA","TARDE","MAURICIO","MAURICIO","LOCAL",110.0],["2026-06-02",43609,2,"MANUEL","TARDE","FERNANDA","FERNANDA","LOCAL",159.0],["2026-06-02",43609,3,"SHEYLA","TARDE","MAURICIO","MAURICIO","LOCAL",125.0],["2026-06-02",43609,4,"FERNANDA","TARDE","MAURICIO","MAURICIO","LOCAL",111.0],["2026-06-02",43611,1,"FERNANDA","TARDE","MAURICIO","MAURICIO","LOCAL",111.0],["2026-06-02",43612,1,"FERNANDA","TARDE","MAURICIO","MAURICIO","LOCAL",171.0],["2026-06-02",43612,2,"SHEYLA","TARDE","MAURICIO","MAURICIO","LOCAL",157.0],["2026-06-02",43612,3,"MANUEL","TARDE","FERNANDA","FERNANDA","LOCAL",199.0],["2026-06-02",43612,4,"SHEYLA","TARDE","MAURICIO","MAURICIO","LOCAL",178.0],["2026-06-02",43613,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","LOCAL",174.0],["2026-06-03",43616,1,"JOSE","MAÑANA","YUSID","YUSID","TERCERO",30.0],["2026-06-03",43615,1,"JOSE","MAÑANA","YUSID","YUSID","TERCERO",30.0],["2026-06-03",43604,1,"TABY","MAÑANA","SHEYLA","SHEYLA","TERCERO",40.0],["2026-06-03",43605,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",31.0],["2026-06-03",43623,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",35.0],["2026-06-03",43622,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",37.0],["2026-06-03",43625,1,"JOSE","MAÑANA","SHEYLA","SHEYLA","TERCERO",54.0],["2026-06-03",43624,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",75.0],["2026-06-03",43624,2,"JANETH","MAÑANA","TABY","TABY","TERCERO",80.0],["2026-06-03",43621,1,"JANETH","MAÑANA","JOSE","JOSE","TERCERO",40.0],["2026-06-03",43618,1,"JANETH","MAÑANA","SHEYLA","SHEYLA","TERCERO",36.0],["2026-06-03",43626,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",14.0],["2026-06-03",43620,1,"YUSID","MAÑANA","SHEYLA","SHEYLA","TERCERO",37.0],["2026-06-03",43631,1,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",44.0],["2026-06-03",43629,1,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",51.0],["2026-06-03",43632,1,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",37.0],["2026-06-03",43608,1,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",48.0],["2026-06-03",43607,1,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",47.0],["2026-06-03",43636,1,"YUSID","MAÑANA","YUSID","YUSID","TERCERO",16.0],["2026-06-03",43633,1,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",47.0],["2026-06-03",43578,1,"SHEYLA","MAÑANA","SHEYLA","SHEYLA","TERCERO",32.0],["2026-06-03",43644,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",48.0],["2026-06-03",43619,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",65.0],["2026-06-03",43643,1,"SHEYLA","MAÑANA","YUSID","YUSID","TERCERO",113.0],["2026-06-03",43641,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",88.0],["2026-06-03",43639,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",93.0],["2026-06-03",43642,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",78.0],["2026-06-03",43640,1,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",140.0],["2026-06-03",43635,1,"SHEYLA","MAÑANA","YUSID","YUSID","TERCERO",67.0],["2026-06-03",43634,1,"JOSE","MAÑANA","MAURICIO","MAURICIO","TERCERO",147.0],["2026-06-03",43640,2,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",142.0],["2026-06-03",43634,2,"JOSE","MAÑANA","MAURICIO","MAURICIO","TERCERO",178.0],["2026-06-03",43658,1,"MAURICIO","TARDE","MAURICIO","MAURICIO","TERCERO",13.0],["2026-06-03",43653,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",22.0],["2026-06-03",43656,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",39.0],["2026-06-03",43657,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",11.0],["2026-06-03",43661,1,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",123.0],["2026-06-03",43661,2,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",134.0],["2026-06-03",43661,3,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",140.0],["2026-06-03",43652,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",28.0],["2026-06-04",43666,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",14.0],["2026-06-04",43670,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",34.0],["2026-06-04",43667,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",55.0],["2026-06-04",43672,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",57.0],["2026-06-04",43673,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",57.0],["2026-06-04",43695,1,"YARIDA","MAÑANA","TABY","TABY","TERCERO",12.0],["2026-06-04",43690,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",59.0],["2026-06-04",43696,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",58.0],["2026-06-04",43692,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",72.0],["2026-06-04",43694,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",74.0],["2026-06-04",43693,1,"JANETH","MAÑANA","SHEYLA","SHEYLA","TERCERO",156.0],["2026-06-04",43697,1,"JANETH","MAÑANA","TABY","YUSID","TERCERO",83.0],["2026-06-04",43700,1,"JANETH","MAÑANA","TABY","YUSID","TERCERO",74.0],["2026-06-04",43701,1,"JANETH","MAÑANA","TABY","YUSID","TERCERO",74.0],["2026-06-04",43704,1,"JANETH","MAÑANA","TABY","YUSID","TERCERO",50.0],["2026-06-04",43707,1,"JANETH","MAÑANA","MAURICIO","MAURICIO","TERCERO",83.0],["2026-06-04",43708,1,"JANETH","MAÑANA","MAURICIO","MAURICIO","TERCERO",83.0],["2026-06-04",43663,1,"JANETH","MAÑANA","SHEYLA","SHEYLA","TERCERO",100.0],["2026-06-04",43688,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",35.0],["2026-06-04",43703,1,"TABY","TARDE","SHEYLA","SHEYLA","TERCERO",26.0],["2026-06-04",43706,1,"MAURICIO","TARDE","TABY","TABY","TERCERO",26.0],["2026-06-04",43594,1,"MAURICIO","TARDE","TABY","TABY","TERCERO",59.0],["2026-06-04",43594,2,"MAURICIO","TARDE","TABY","TABY","TERCERO",67.0],["2026-06-04",43710,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",54.0],["2026-06-04",43711,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",54.0],["2026-06-04",43709,1,"TABY","TARDE","SHEYLA","SHEYLA","TERCERO",47.0],["2026-06-04",43705,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",20.0],["2026-06-04",43671,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",161.0],["2026-06-04",43671,2,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",170.0],["2026-06-04",43672,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",34.0],["2026-06-04",43714,1,"TABY","TARDE","FERNANDA","FERNANDA","TERCERO",108.0],["2026-06-04",43716,1,"TABY","TARDE","FERNANDA","FERNANDA","TERCERO",128.0],["2026-06-04",43731,1,"SHEYLA","MAÑANA","SHEYLA","SHEYLA","TERCERO",1.0],["2026-06-04",43674,1,"TABY","MAÑANA","YUSID","YUSID","LOCAL",216.0],["2026-06-04",43674,2,"JOSE","MAÑANA","YUSID","YUSID","LOCAL",169.0],["2026-06-04",43674,3,"JANETH","MAÑANA","YUSID","YUSID","LOCAL",104.0],["2026-06-04",43674,4,"JANETH","MAÑANA","YUSID","YUSID","LOCAL",149.0],["2026-06-04",43674,5,"TABY","MAÑANA","YUSID","YUSID","LOCAL",241.0],["2026-06-04",43674,6,"JANETH","MAÑANA","YUSID","YUSID","LOCAL",190.0],["2026-06-04",43674,7,"TABY","MAÑANA","YUSID","YUSID","LOCAL",266.0],["2026-06-04",43675,1,"JOSE","MAÑANA","TABY","TABY","LOCAL",263.0],["2026-06-04",43677,1,"JOSE","MAÑANA","MAURICIO","MAURICIO","LOCAL",308.0],["2026-06-04",43677,2,"JOSE","MAÑANA","MAURICIO","MAURICIO","LOCAL",321.0],["2026-06-04",43677,3,"JOSE","MAÑANA","MAURICIO","MAURICIO","LOCAL",324.0],["2026-06-04",43679,1,"JOSE","MAÑANA","MAURICIO","MAURICIO","LOCAL",325.0],["2026-06-04",43698,1,"JOSE","MAÑANA","SHEYLA","SHEYLA","LOCAL",326.0],["2026-06-04",43674,8,"JOSE","MAÑANA","YUSID","YUSID","LOCAL",295.0],["2026-06-04",43674,9,"JANETH","MAÑANA","YUSID","YUSID","LOCAL",348.0],["2026-06-04",43726,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","LOCAL",197.0],["2026-06-04",43726,2,"TABY","TARDE","SHEYLA","SHEYLA","LOCAL",210.0],["2026-06-04",43726,3,"SHEYLA","TARDE","FERNANDA","FERNANDA","LOCAL",216.0],["2026-06-04",43726,4,"SHEYLA","TARDE","SHEYLA","SHEYLA","LOCAL",213.0],["2026-06-04",43728,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","LOCAL",218.0],["2026-06-04",43729,1,"TABY","MAÑANA","FERNANDA","FERNANDA","LOCAL",180.0],["2026-06-04",43730,1,"TABY","MAÑANA","FERNANDA","FERNANDA","LOCAL",179.0],["2026-06-05",43739,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",135.0],["2026-06-05",43757,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",163.0],["2026-06-05",43763,1,"JANETH","MAÑANA","SHEYLA","SHEYLA","TERCERO",96.0],["2026-06-05",43763,2,"JANETH","MAÑANA","SHEYLA","SHEYLA","TERCERO",98.0],["2026-06-05",43764,1,"JANETH","MAÑANA","SHEYLA","SHEYLA","TERCERO",100.0],["2026-06-05",43762,1,"JANETH","MAÑANA","SHEYLA","SHEYLA","TERCERO",127.0],["2026-06-05",43765,1,"JANETH","MAÑANA","SHEYLA","SHEYLA","TERCERO",137.0],["2026-06-05",43774,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",4.0],["2026-06-05",43770,1,"JOSE","MAÑANA","FERNANDA","FERNANDA","TERCERO",98.0],["2026-06-05",43771,1,"JOSE","MAÑANA","FERNANDA","FERNANDA","TERCERO",99.0],["2026-06-05",43775,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",122.0],["2026-06-05",43775,2,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",127.0],["2026-06-05",43777,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",164.0],["2026-06-05",43777,2,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",166.0],["2026-06-05",43784,1,"YARIDA","TARDE","FERNANDA","FERNANDA","TERCERO",9.0],["2026-06-05",43738,1,"JOSE","TARDE","TABY","TABY","TERCERO",45.0],["2026-06-05",43733,1,"JANETH","TARDE","YUSID","YUSID","TERCERO",53.0],["2026-06-05",43732,1,"JANETH","TARDE","YUSID","YUSID","TERCERO",53.0],["2026-06-05",43732,2,"JANETH","TARDE","YUSID","YUSID","TERCERO",53.0],["2026-06-05",43741,1,"JOSE","TARDE","TABY","TABY","TERCERO",null],["2026-06-05",43751,1,"JOSE","TARDE","TABY","TABY","TERCERO",53.0],["2026-06-05",43749,1,"JANETH","TARDE","TABY","TABY","TERCERO",60.0],["2026-06-05",43755,1,"JOSE","TARDE","TABY","TABY","TERCERO",76.0],["2026-06-05",43759,1,"JANETH","TARDE","SHEYLA","SHEYLA","TERCERO",184.0],["2026-06-05",43753,1,"JANETH","TARDE","TABY","TABY","TERCERO",108.0],["2026-06-05",43758,1,"JANETH","TARDE","TABY","TABY","TERCERO",108.0],["2026-06-05",43750,1,"JOSE","TARDE","TABY","TABY","TERCERO",null],["2026-06-05",43752,1,"JOSE","TARDE","TABY","TABY","TERCERO",58.8],["2026-06-05",43742,1,"JANETH","TARDE","TABY","TABY","TERCERO",193.0],["2026-06-05",43742,2,"JANETH","TARDE","TABY","TABY","TERCERO",187.0],["2026-06-05",43617,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",28.0],["2026-06-05",43719,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",34.0],["2026-06-05",43718,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",54.0],["2026-06-05",43735,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",54.0],["2026-06-05",43725,2,"JOSE","MAÑANA","TABY","TABY","TERCERO",220.0],["2026-06-05",43721,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",116.0],["2026-06-05",43715,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",94.0],["2026-06-05",43713,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",94.0],["2026-06-05",43725,2,"JOSE","MAÑANA","TABY","TABY","TERCERO",200.0],["2026-06-05",43724,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",38.0],["2026-06-05",43723,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",37.0],["2026-06-05",43736,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",27.0],["2026-06-05",43734,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",117.0],["2026-06-05",43754,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",118.0],["2026-06-05",43740,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",69.0],["2026-06-06",43781,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",94.0],["2026-06-06",43780,1,"MANUEL","MAÑANA","TABY","TABY","TERCERO",115.0],["2026-06-06",43783,1,"JANETH","MAÑANA","MAURICIO","MAURICIO","TERCERO",115.0],["2026-06-06",43782,1,"JANETH","MAÑANA","MAURICIO","MAURICIO","TERCERO",115.0],["2026-06-06",43786,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",66.0],["2026-06-06",43787,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",66.0],["2026-06-06",43798,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",67.0],["2026-06-06",43785,1,"MANUEL","MAÑANA","SHEYLA","SHEYLA","TERCERO",119.0],["2026-06-06",43793,1,"SHEYLA","MAÑANA","JOSE","JOSE","TERCERO",158.0],["2026-06-06",43794,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",73.0],["2026-06-06",43796,1,"JANETH","MAÑANA","SHEYLA","SHEYLA","TERCERO",126.0],["2026-06-06",43797,1,"JOSE","MAÑANA","MAURICIO","MAURICIO","TERCERO",154.0],["2026-06-06",43806,1,"JANETH","MAÑANA","JOSE","JOSE","TERCERO",75.0],["2026-06-06",43780,2,"JANETH","MAÑANA","TABY","TABY","TERCERO",130.0],["2026-06-06",43802,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",192.0],["2026-06-06",43803,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",192.0],["2026-06-06",43804,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",197.0],["2026-06-06",43805,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",204.0],["2026-06-06",43807,1,"MAURICIO","MAÑANA","SHEYLA","SHEYLA","TERCERO",117.0],["2026-06-06",43800,1,"JOSE","MAÑANA","MAURICIO","MAURICIO","TERCERO",90.0],["2026-06-06",43799,1,"JOSE","MAÑANA","MAURICIO","MAURICIO","TERCERO",90.0],["2026-06-06",43780,3,"JANETH","MAÑANA","JOSE","JOSE","TERCERO",117.0],["2026-06-06",43810,1,"SHEYLA","MAÑANA","JOSE","JOSE","TERCERO",43.0],["2026-06-06",43809,1,"SHEYLA","MAÑANA","JOSE","JOSE","TERCERO",61.0],["2026-06-06",43811,1,"TABY","MAÑANA","SHEYLA","SHEYLA","TERCERO",68.0],["2026-06-06",43816,1,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",103.0],["2026-06-06",43817,2,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",88.0],["2026-06-06",43817,1,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",93.0],["2026-06-06",43818,1,"TABY","MAÑANA","MAURICIO","MAURICIO","TERCERO",37.0],["2026-06-06",43819,1,"TABY","MAÑANA","TABY","TABY","TERCERO",36.0],["2026-06-06",43824,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",71.0],["2026-06-06",43823,1,"JOSE","MAÑANA","YUSID","YUSID","TERCERO",100.0],["2026-06-06",43788,1,"JANETH","MAÑANA","TABY","TABY","LOCAL",null],["2026-06-06",43788,2,"JOSE","MAÑANA","TABY","TABY","LOCAL",null],["2026-06-06",43788,3,"TABY","MAÑANA","TABY","TABY","LOCAL",null],["2026-06-06",43788,4,"JANETH","MAÑANA","TABY","TABY","LOCAL",null],["2026-06-06",43792,1,"JANETH","MAÑANA","MAURICIO","MAURICIO","LOCAL",null],["2026-06-06",43791,1,"MAURICIO","MAÑANA","TABY","TABY","LOCAL",null],["2026-06-06",43791,2,"MAURICIO","MAÑANA","JANETH","JANETH","LOCAL",null],["2026-06-06",43791,3,"JANETH","MAÑANA","MAURICIO","MAURICIO","LOCAL",null],["2026-06-06",43790,1,"JOSE","MAÑANA","TABY","TABY","LOCAL",null],["2026-06-08",43826,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",73.0],["2026-06-08",43826,2,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",84.0],["2026-06-08",43826,3,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",86.0],["2026-06-08",43827,1,"JOSE","MAÑANA","YUSID","YUSID","TERCERO",23.0],["2026-06-08",43820,1,"TABY","MAÑANA","JOSE","JOSE","TERCERO",27.0],["2026-06-08",43829,1,"TABY","MAÑANA","JANETH","JANETH","TERCERO",16.0],["2026-06-08",43831,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",22.0],["2026-06-08",43832,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",23.0],["2026-06-08",43836,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",31.0],["2026-06-08",43837,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",16.0],["2026-06-08",43838,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",16.0],["2026-06-08",43839,1,"TABY","MAÑANA","JANETH","JANETH","TERCERO",15.0],["2026-06-08",43850,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",130.0],["2026-06-08",43840,1,"MANUEL","MAÑANA","TABY","TABY","TERCERO",96.0],["2026-06-08",43840,2,"MANUEL","MAÑANA","TABY","TABY","TERCERO",77.0],["2026-06-08",43841,1,"YUSID","MAÑANA","TABY","TABY","TERCERO",77.0],["2026-06-08",43842,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",30.0],["2026-06-08",43853,2,"JOSE","MAÑANA","TABY","TABY","TERCERO",125.0],["2026-06-08",43853,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",139.0],["2026-06-08",43833,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",49.0],["2026-06-08",43854,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",27.0],["2026-06-08",43856,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",42.0],["2026-06-08",43860,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",26.0],["2026-06-08",43858,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",44.0],["2026-06-08",43859,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",47.0],["2026-06-08",43861,1,"JANETH","MAÑANA","SHEYLA","SHEYLA","TERCERO",138.0],["2026-06-08",43866,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",106.0],["2026-06-08",43865,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",105.0],["2026-06-08",43847,1,"MANUEL","MAÑANA","YUSID","YUSID","TERCERO",111.0],["2026-06-08",43846,3,"JOSE","MAÑANA","YUSID","YUSID","TERCERO",89.0],["2026-06-08",43846,2,"YUSID","MAÑANA","SHEYLA","SHEYLA","TERCERO",191.0],["2026-06-08",43846,1,"TABY","MAÑANA","YUSID","YUSID","TERCERO",109.0],["2026-06-08",43864,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",140.0],["2026-06-08",43864,2,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",143.0],["2026-06-08",43869,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",117.0],["2026-06-08",43870,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",112.0],["2026-06-08",43868,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",114.0],["2026-06-08",43862,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",121.0],["2026-06-08",43863,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",123.0],["2026-06-08",43867,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",140.0],["2026-06-08",43871,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",131.0],["2026-06-08",43873,1,"YUSID","TARDE","FERNANDA","FERNANDA","TERCERO",38.0],["2026-06-08",43877,1,"YUSID","TARDE","MAURICIO","MAURICIO","TERCERO",42.0],["2026-06-08",43878,1,"YUSID","TARDE","MAURICIO","MAURICIO","TERCERO",42.0],["2026-06-08",43874,1,"MAURICIO","TARDE","MAURICIO","MAURICIO","TERCERO",6.0],["2026-06-08",43880,1,"MAURICIO","TARDE","MAURICIO","MAURICIO","TERCERO",6.0],["2026-06-08",43881,1,"YARIDA","TARDE","MAURICIO","FERNANDA","TERCERO",7.0],["2026-06-08",43893,1,"FERNANDA","TARDE","FERNANDA","FERNANDA","TERCERO",null],["2026-06-08",43875,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",50.0],["2026-06-08",43874,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",74.0],["2026-06-08",43874,2,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",78.0],["2026-06-08",43898,1,"FERNANDA","TARDE","FERNANDA","FERNANDA","TERCERO",21.0],["2026-06-08",43851,1,"JANETH","TARDE","JANETH","JANETH","TERCERO",93.0],["2026-06-08",43882,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","LOCAL",53.0],["2026-06-08",43882,2,"YUSID","TARDE","MAURICIO","MAURICIO","LOCAL",43.0],["2026-06-08",43882,3,"YUSID","TARDE","MAURICIO","MAURICIO","LOCAL",72.0],["2026-06-08",43882,4,"SHEYLA","TARDE","MAURICIO","MAURICIO","LOCAL",86.0],["2026-06-08",43883,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","LOCAL",63.0],["2026-06-08",43886,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","LOCAL",160.0],["2026-06-08",43886,2,"MAURICIO","TARDE","TABY","TABY","LOCAL",49.0],["2026-06-08",43886,3,"SHEYLA","TARDE","MAURICIO","MAURICIO","LOCAL",188.0],["2026-06-08",43886,4,"SHEYLA","TARDE","MAURICIO","MAURICIO","LOCAL",217.0],["2026-06-08",43886,5,"FERNANDA","TARDE","YUSID","TABY","LOCAL",84.0],["2026-06-08",43886,6,"SHEYLA","TARDE","YUSID","TABY","LOCAL",111.0],["2026-06-08",43886,7,"SHEYLA","TARDE","TABY","TABY","LOCAL",90.0],["2026-06-08",43887,1,"MAURICIO","TARDE","TABY","TABY","LOCAL",113.0],["2026-06-08",43889,1,"MAURICIO","TARDE","TABY","TABY","LOCAL",119.0],["2026-06-09",43905,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",22.0],["2026-06-09",43899,1,"YUSID","MAÑANA","TABY","TABY","TERCERO",39.0],["2026-06-09",43876,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",121.2],["2026-06-09",43876,2,"JOSE","MAÑANA","TABY","TABY","TERCERO",72.0],["2026-06-09",43903,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",21.0],["2026-06-09",43902,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",23.0],["2026-06-09",43896,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",33.0],["2026-06-09",43892,1,"YUSID","MAÑANA","TABY","TABY","TERCERO",50.0],["2026-06-09",43906,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",42.0],["2026-06-09",43907,1,"YUSID","MAÑANA","YUSID","YUSID","TERCERO",19.0],["2026-06-09",43910,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",21.0],["2026-06-09",43909,1,"YUSID","MAÑANA","TABY","TABY","TERCERO",109.0],["2026-06-09",43909,2,"YUSID","MAÑANA","TABY","TABY","TERCERO",125.0],["2026-06-09",43911,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",68.0],["2026-06-09",43913,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",38.0],["2026-06-09",43919,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",12.0],["2026-06-09",43916,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",164.0],["2026-06-09",43921,1,"YUSID","MAÑANA","YUSID","YUSID","TERCERO",135.0],["2026-06-09",43921,2,"YUSID","MAÑANA","YUSID","YUSID","TERCERO",135.0],["2026-06-09",43918,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",107.0],["2026-06-09",43918,2,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",117.0],["2026-06-09",43925,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",17.0],["2026-06-09",43926,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",22.0],["2026-06-09",43927,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",22.0],["2026-06-09",43931,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",28.0],["2026-06-09",43914,2,"TABY","MAÑANA","TABY","TABY","TERCERO",97.0],["2026-06-09",43914,3,"YUSID","MAÑANA","YUSID","YUSID","TERCERO",97.0],["2026-06-09",43914,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",84.0],["2026-06-09",43914,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",379.6],["2026-06-09",43929,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",31.0],["2026-06-09",43937,1,"YUSID","TARDE","MAURICIO","MAURICIO","TERCERO",61.0],["2026-06-09",43948,1,"MAURICIO","TARDE","YUSID","YUSID","TERCERO",46.0],["2026-06-09",43920,1,"MAURICIO","TARDE","YUSID","YUSID","TERCERO",52.0],["2026-06-09",43946,1,"FERNANDA","TARDE","MAURICIO","MAURICIO","TERCERO",61.0],["2026-06-09",43946,2,"FERNANDA","TARDE","MAURICIO","MAURICIO","TERCERO",68.0],["2026-06-09",43947,1,"FERNANDA","TARDE","MAURICIO","MAURICIO","TERCERO",69.0],["2026-06-09",43933,1,"YARIDA","TARDE","MAURICIO","MAURICIO","TERCERO",7.0],["2026-06-09",43955,1,"MAURICIO","TARDE","MAURICIO","MAURICIO","TERCERO",147.0],["2026-06-09",43934,1,"FERNANDA","TARDE","MAURICIO","MAURICIO","TERCERO",248.0],["2026-06-09",43934,2,"FERNANDA","TARDE","MAURICIO","MAURICIO","TERCERO",253.0],["2026-06-09",93934,3,"FERNANDA","TARDE","MAURICIO","MAURICIO","TERCERO",263.0],["2026-06-09",43952,1,"MAURICIO","TARDE","MAURICIO","MAURICIO","TERCERO",104.0],["2026-06-09",43958,1,"FERNANDA","TARDE","FERNANDA","FERNANDA","TERCERO",4.0],["2026-06-09",43935,1,"FERNANDA","TARDE","MAURICIO","MAURICIO","TERCERO",264.0],["2026-06-09",43940,1,"MAURICIO","TARDE","YUSID","YUSID","LOCAL",59.0],["2026-06-09",43940,2,"YUSID","TARDE","MAURICIO","MAURICIO","LOCAL",53.0],["2026-06-09",43940,3,"MAURICIO","TARDE","YUSID","YUSID","LOCAL",128.0],["2026-06-09",43940,4,"YUSID","TARDE","MAURICIO","MAURICIO","LOCAL",176.0],["2026-06-09",43940,5,"MAURICIO","TARDE","YUSID","YUSID","LOCAL",159.0],["2026-06-09",43941,1,"MAURICIO","TARDE","YUSID","YUSID","LOCAL",186.0],["2026-06-09",43943,1,"MAURICIO","TARDE","YUSID","YUSID","LOCAL",252.0],["2026-06-09",43943,2,"YUSID","TARDE","MAURICIO","MAURICIO","LOCAL",319.0],["2026-06-09",43943,3,"MAURICIO","TARDE","YUSID","YUSID","LOCAL",312.0],["2026-06-09",43944,1,"MAURICIO","TARDE","YUSID","YUSID","LOCAL",314.0],["2026-06-10",43961,1,"JOSE","MAÑANA","JOSE","JOSE","TERCERO",14.0],["2026-06-10",43962,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",67.0],["2026-06-10",43962,2,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",70.0],["2026-06-10",43965,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",93.0],["2026-06-10",43964,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",91.0],["2026-06-10",43964,2,"JANETH","MAÑANA","TABY","TABY","TERCERO",93.0],["2026-06-10",43963,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",60.0],["2026-06-10",43957,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",43.0],["2026-06-10",43969,1,"TABY","MAÑANA","YUSID","YUSID","TERCERO",61.0],["2026-06-10",43968,1,"TABY","MAÑANA","YUSID","YUSID","TERCERO",null],["2026-06-10",43971,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",27.0],["2026-06-10",43970,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",null],["2026-06-10",43930,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",null],["2026-06-10",43977,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",null],["2026-06-10",43975,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",110.0],["2026-06-10",43974,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",170.0],["2026-06-10",43974,2,"JANETH","MAÑANA","TABY","TABY","TERCERO",230.0],["2026-06-10",43978,1,"TABY","MAÑANA","TABY","TABY","TERCERO",6.0],["2026-06-10",43983,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",54.0],["2026-06-10",43993,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",24.0],["2026-06-10",93980,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",25.0],["2026-06-10",43985,1,"JOSE","MAÑANA","YUSID","YUSID","TERCERO",34.0],["2026-06-10",43988,1,"YUSID","MAÑANA","TABY","TABY","TERCERO",29.0],["2026-06-10",43990,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",42.0],["2026-06-10",43989,1,"JANETH","MAÑANA","TABY","nan","TERCERO",42.0],["2026-06-10",43987,1,"JOSE","MAÑANA","YUSID","YUSID","TERCERO",51.0],["2026-06-10",43994,1,"TABY","MAÑANA","YUSID","YUSID","TERCERO",82.0],["2026-06-10",43994,2,"TABY","MAÑANA","YUSID","YUSID","TERCERO",92.0],["2026-06-10",43999,1,"TABY","MAÑANA","YUSID","YUSID","TERCERO",53.0],["2026-06-10",44002,1,"YUSID","MAÑANA","TABY","TABY","TERCERO",30.0],["2026-06-10",44001,1,"JANETH","MAÑANA","SHEYLA","SHEYLA","TERCERO",39.0],["2026-06-10",43998,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",55.0],["2026-06-10",43997,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",55.0],["2026-06-10",43995,1,"TABY","TARDE","FERNANDA","FERNANDA","TERCERO",103.0],["2026-06-10",44003,1,"SHEYLA","TARDE","JANETH","JANETH","TERCERO",89.0],["2026-06-10",44014,1,"SHEYLA","TARDE","JANETH","JANETH","TERCERO",94.0],["2026-06-10",44000,1,"SHEYLA","TARDE","JANETH","JANETH","TERCERO",121.0],["2026-06-10",44004,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",89.0],["2026-06-10",44012,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",95.0],["2026-06-10",44016,1,"YARIDA","TARDE","FERNANDA","FERNANDA","TERCERO",78.0],["2026-06-10",44021,1,"YARIDA","TARDE","FERNANDA","FERNANDA","TERCERO",138.0],["2026-06-10",44019,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",18.0],["2026-06-10",44020,1,"SHEYLA","TARDE","JANETH","JANETH","TERCERO",72.0],["2026-06-10",44024,1,"JANETH","TARDE","JANETH","JANETH","TERCERO",144.0],["2026-06-10",44017,1,"JANETH","TARDE","SHEYLA","SHEYLA","TERCERO",129.0],["2026-06-10",43991,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",123.0],["2026-06-10",43992,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",123.0],["2026-06-10",44022,1,"JANETH","TARDE","SHEYLA","SHEYLA","TERCERO",116.0],["2026-06-10",44007,1,"JANETH","MAÑANA","SHEYLA","SHEYLA","LOCAL",176.0],["2026-06-10",44007,2,"JANETH","TARDE","SHEYLA","SHEYLA","LOCAL",236.0],["2026-06-10",44007,3,"JANETH","TARDE","SHEYLA","SHEYLA","LOCAL",296.0],["2026-06-10",44009,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","LOCAL",356.0],["2026-06-10",44009,2,"SHEYLA","TARDE","FERNANDA","FERNANDA","LOCAL",416.0],["2026-06-10",44009,3,"JANETH","TARDE","FERNANDA","FERNANDA","LOCAL",476.0],["2026-06-10",44009,4,"SHEYLA","TARDE","FERNANDA","FERNANDA","LOCAL",null],["2026-06-10",44010,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","LOCAL",null],["2026-06-10",44011,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","LOCAL",null],["2026-06-11",43956,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",52.0],["2026-06-11",43981,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",54.0],["2026-06-11",43981,2,"YUSID","MAÑANA","TABY","TABY","TERCERO",68.0],["2026-06-11",43981,3,"TABY","MAÑANA","YUSID","YUSID","TERCERO",46.0],["2026-06-11",44027,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",73.0],["2026-06-11",44027,2,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",92.0],["2026-06-11",44027,3,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",105.0],["2026-06-11",44028,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",108.0],["2026-06-11",44031,1,"TABY","MAÑANA","YUSID","YUSID","TERCERO",134.0],["2026-06-11",44033,1,"TABY","MAÑANA","YUSID","YUSID","TERCERO",95.0],["2026-06-11",44036,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",50.0],["2026-06-11",44032,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",48.0],["2026-06-11",44039,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",48.0],["2026-06-11",44039,2,"JANETH","MAÑANA","TABY","TABY","TERCERO",50.0],["2026-06-11",44037,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",63.0],["2026-06-11",44040,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",27.0],["2026-06-11",44048,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",10.0],["2026-06-11",44042,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",35.0],["2026-06-11",44046,1,"TABY","MAÑANA","TABY","TABY","TERCERO",44.0],["2026-06-11",44051,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",30.0],["2026-06-11",44043,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",25.0],["2026-06-11",44053,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",61.0],["2026-06-11",44060,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",66.0],["2026-06-11",44056,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",52.0],["2026-06-11",44058,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",18.0],["2026-06-11",44065,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",26.0],["2026-06-11",44061,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",36.0],["2026-06-11",44067,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",12.0],["2026-06-11",44057,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",50.0],["2026-06-11",44057,2,"JANETH","MAÑANA","TABY","TABY","TERCERO",50.0],["2026-06-11",44070,1,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",38.0],["2026-06-11",44071,1,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",22.0],["2026-06-11",44064,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",53.0],["2026-06-11",44066,1,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",78.0],["2026-06-11",44069,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",58.0],["2026-06-11",44073,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",null],["2026-06-11",44077,1,"MAURICIO","TARDE","MAURICIO","MAURICIO","TERCERO",11.0],["2026-06-11",44081,2,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",81.0],["2026-06-11",44081,2,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",82.0],["2026-06-11",44082,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",82.0],["2026-06-11",44083,1,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",78.0],["2026-06-11",44083,2,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",81.0],["2026-06-11",44087,1,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",24.0],["2026-06-11",44088,1,"MAURICIO","TARDE","MAURICIO","MAURICIO","TERCERO",45.0],["2026-06-11",44093,1,"MAURICIO","TARDE","MAURICIO","MAURICIO","TERCERO",6.0],["2026-06-11",44094,1,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",77.0],["2026-06-11",44097,1,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",73.0],["2026-06-11",44096,1,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",85.0],["2026-06-11",44095,1,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",83.0],["2026-06-11",44098,1,"MAURICIO","TARDE","SHEYLA","SHEYLA","TERCERO",64.0],["2026-06-11",44054,1,"JANETH","TARDE","TABY","TABY","TERCERO",83.0],["2026-06-11",44055,1,"JANETH","TARDE","TABY","TABY","TERCERO",83.0],["2026-06-11",44072,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",7.0],["2026-06-11",44089,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",78.0],["2026-06-11",44089,2,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",126.0],["2026-06-11",44089,3,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",131.0],["2026-06-11",44089,4,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",146.0],["2026-06-11",44092,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",79.0],["2026-06-11",44091,1,"SHEYLA","TARDE","MAURICIO","MAURICIO","TERCERO",147.0],["2026-06-12",44099,1,"YUSID","MAÑANA","TABY","TABY","TERCERO",80.0],["2026-06-12",44099,2,"YUSID","MAÑANA","TABY","TABY","TERCERO",95.0],["2026-06-12",44099,3,"YUSID","MAÑANA","TABY","TABY","TERCERO",97.0],["2026-06-12",44103,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",21.0],["2026-06-12",44104,1,"MAURICIO","MAÑANA","TABY","TABY","TERCERO",51.0],["2026-06-12",44104,2,"MAURICIO","MAÑANA","TABY","TABY","TERCERO",58.0],["2026-06-12",44084,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",67.0],["2026-06-12",44107,1,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",63.0],["2026-06-12",44107,2,"JANETH","MAÑANA","YUSID","YUSID","TERCERO",null],["2026-06-12",44110,1,"MAURICIO","MAÑANA","TABY","TABY","TERCERO",58.0],["2026-06-12",44110,2,"MAURICIO","MAÑANA","TABY","TABY","TERCERO",63.0],["2026-06-12",44111,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",27.0],["2026-06-12",44108,1,"MAURICIO","MAÑANA","TABY","TABY","TERCERO",47.0],["2026-06-12",44108,2,"JANETH","MAÑANA","TABY","TABY","TERCERO",38.0],["2026-06-12",44114,1,"TABY","MAÑANA","YUSID","YUSID","TERCERO",62.0],["2026-06-12",44117,1,"YUSID","MAÑANA","MAURICIO","MAURICIO","TERCERO",54.0],["2026-06-12",44116,1,"MAURICIO","MAÑANA","TABY","TABY","TERCERO",43.0],["2026-06-12",44112,1,"TABY","MAÑANA","YUSID","YUSID","TERCERO",53.0],["2026-06-12",44118,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",34.0],["2026-06-12",44119,1,"MAURICIO","MAÑANA","YUSID","YUSID","TERCERO",25.0],["2026-06-12",44121,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",31.0],["2026-06-12",44123,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",52.0],["2026-06-12",44128,1,"TABY","MAÑANA","YUSID","YUSID","TERCERO",30.0],["2026-06-12",44127,1,"JANETH","MAÑANA","TABY","TABY","TERCERO",36.0],["2026-06-12",44120,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",49.0],["2026-06-12",44106,1,"JOSE","TARDE","SHEYLA","SHEYLA","TERCERO",73.0],["2026-06-12",44105,1,"JOSE","TARDE","SHEYLA","SHEYLA","TERCERO",71.0],["2026-06-12",44139,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",40.0],["2026-06-12",44138,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",39.0],["2026-06-12",43951,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","TERCERO",74.0],["2026-06-12",44140,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",26.0],["2026-06-12",44142,1,"JOSE","TARDE","JOSE","JOSE","TERCERO",30.0],["2026-06-12",44145,1,"SHEYLA","TARDE","TABY","TABY","TERCERO",105.0],["2026-06-12",44145,2,"SHEYLA","TARDE","TABY","TABY","TERCERO",107.0],["2026-06-12",44131,1,"JOSE","TARDE","TABY","TABY","TERCERO",127.0],["2026-06-12",44132,1,"JOSE","TARDE","TABY","TABY","TERCERO",127.0],["2026-06-12",44133,1,"SHEYLA","TARDE","JOSE","JOSE","LOCAL",null],["2026-06-12",44133,2,"JOSE","TARDE","FERNANDA","FERNANDA","LOCAL",149.0],["2026-06-12",44133,3,"MANUEL","TARDE","SHEYLA","SHEYLA","LOCAL",55.0],["2026-06-12",44133,4,"TABY","TARDE","SHEYLA","SHEYLA","LOCAL",59.0],["2026-06-12",44134,1,"YUSID","TARDE","SHEYLA","SHEYLA","LOCAL",61.0],["2026-06-12",44136,1,"SHEYLA","TARDE","SHEYLA","SHEYLA","LOCAL",199.0],["2026-06-12",44136,2,"JOSE","TARDE","SHEYLA","SHEYLA","LOCAL",200.0],["2026-06-12",44136,3,"JOSE","TARDE","SHEYLA","SHEYLA","LOCAL",204.0],["2026-06-13",44149,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",46.0],["2026-06-13",44150,1,"JANETH","MAÑANA","JANETH","JANETH","TERCERO",43.0],["2026-06-13",44155,1,"MAURICIO","MAÑANA","TABY","TABY","TERCERO",44.0],["2026-06-13",44154,1,"MAURICIO","MAÑANA","TABY","TABY","TERCERO",42.0],["2026-06-13",44154,2,"MAURICIO","MAÑANA","TABY","TABY","TERCERO",43.0],["2026-06-13",44162,1,"MAURICIO","MAÑANA","TABY","TABY","TERCERO",41.0],["2026-06-13",44163,1,"TABY","MAÑANA","TABY","TABY","TERCERO",8.0],["2026-06-13",44159,2,"MANUEL","MAÑANA","TABY","TABY","TERCERO",10.0],["2026-06-13",44158,1,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",74.0],["2026-06-13",44158,1,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",76.0],["2026-06-13",44167,1,"JOSE","MAÑANA","TABY","TABY","TERCERO",37.0],["2026-06-13",44166,1,"MAURICIO","MAÑANA","SHEYLA","SHEYLA","TERCERO",63.0],["2026-06-13",44165,1,"MAURICIO","MAÑANA","SHEYLA","SHEYLA","TERCERO",60.0],["2026-06-13",44168,1,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",27.0],["2026-06-13",44173,1,"SHEYLA","MAÑANA","TABY","TABY","TERCERO",38.0],["2026-06-13",44169,1,"JOSE","MAÑANA","SHEYLA","SHEYLA","TERCERO",41.0],["2026-06-13",44175,1,"FERNANDA","MAÑANA","FERNANDA","FERNANDA","TERCERO",10.0],["2026-06-13",44177,1,"YUSID","MAÑANA","YUSID","FERNANDA","TERCERO",11.0],["2026-06-13",443951,1,"SHEYLA","TARDE","FERNANDA","FERNANDA","TERCERO",null],["2026-06-13",44152,1,"JOSE","MAÑANA","TABY","TABY","LOCAL",8.0],["2026-06-13",44153,1,"YUSID","MAÑANA","TABY","TABY","LOCAL",9.0]];
+// ---END_RAW---
+let LIVE_DATA = RAW_DATA; // datos activos (puede acumularse)
+
+// ═══════════════════════════════════════════════════════════════
+// ESTADO DE FILTROS
+const F = { mes:'all', semana:'all' };
+let charts = {};
+const gridColor='rgba(128,128,128,0.1)', tick='#94a3b8';
+const tO={responsive:true,maintainAspectRatio:false};
+const noL={plugins:{legend:{display:false}}};
+
+// ═══════════════════════════════════════════════════════════════
+// TABS
+function goTab(n){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pane-'+n).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>{if(b.onclick.toString().includes("'"+n+"'"))b.classList.add('active');});
+  document.getElementById('filterBar').style.display = n==='dashboard'?'flex':'none';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FILTROS DINÁMICOS
+function buildFilterUI(rows){
+  // Meses únicos
+  const meses={};
+  rows.forEach(r=>{ const m=r[0].slice(0,7); if(!meses[m]) meses[m]=0; meses[m]++; });
+  const mesNames={'01':'Ene','02':'Feb','03':'Mar','04':'Abr','05':'May','06':'Jun',
+    '07':'Jul','08':'Ago','09':'Sep','10':'Oct','11':'Nov','12':'Dic'};
+  const mb=document.getElementById('mes-btns');
+  mb.innerHTML='';
+  const allMB=mkBtn('Todos','all','mes'); mb.appendChild(allMB);
+  Object.keys(meses).sort().forEach(m=>{
+    const [y,mo]=m.split('-');
+    const b=mkBtn(mesNames[mo]+' '+y,m,'mes'); mb.appendChild(b);
+  });
+  // Semanas únicas (lun-dom)
+  const sems={};
+  rows.forEach(r=>{
+    const d=new Date(r[0]+'T00:00:00Z');
+    const wd=d.getUTCDay(); // 0=dom
+    const off=wd===0?-6:1-wd;
+    const mon=new Date(d); mon.setUTCDate(d.getUTCDate()+off);
+    const key=mon.toISOString().slice(0,10);
+    if(!sems[key]) sems[key]=0; sems[key]++;
+  });
+  const sb=document.getElementById('sem-btns');
+  sb.innerHTML='';
+  const allSB=mkBtn('Todas','all','semana'); sb.appendChild(allSB);
+  Object.keys(sems).sort().forEach((mon,i)=>{
+    const sun=new Date(mon+'T00:00:00Z'); sun.setUTCDate(sun.getUTCDate()+6);
+    const label=`S${i+1} (${fmtShort(mon)}-${fmtShort(sun.toISOString().slice(0,10))})`;
+    const b=mkBtn(label,mon,'semana'); sb.appendChild(b);
+  });
+  setFilterBtn('mes','all'); setFilterBtn('semana','all');
+}
+function fmtShort(iso){
+  const [,m,d]=iso.split('-'); return d+'/'+m;
+}
+function mkBtn(label,val,group){
+  const b=document.createElement('button');
+  b.className='filter-btn'; b.textContent=label; b.dataset.val=val; b.dataset.group=group;
+  b.onclick=()=>setFilter(group,val);
+  return b;
+}
+function setFilter(group,val){
+  F[group]=val;
+  setFilterBtn(group,val);
+  // Reset other if changed
+  if(group==='mes'){ F.semana='all'; setFilterBtn('semana','all'); }
+  applyFilters();
+}
+function setFilterBtn(group,val){
+  const container=group==='mes'?document.getElementById('mes-btns'):document.getElementById('sem-btns');
+  container.querySelectorAll('.filter-btn').forEach(b=>{
+    b.classList.toggle('on', b.dataset.val===val);
+  });
+}
+function filterRows(rows){
+  return rows.filter(r=>{
+    if(F.mes!=='all' && !r[0].startsWith(F.mes)) return false;
+    if(F.semana!=='all'){
+      const d=new Date(r[0]+'T00:00:00Z');
+      const wd=d.getUTCDay(); const off=wd===0?-6:1-wd;
+      const mon=new Date(d); mon.setUTCDate(d.getUTCDate()+off);
+      if(mon.toISOString().slice(0,10)!==F.semana) return false;
+    }
+    return true;
+  });
+}
+function applyFilters(){
+  const rows=filterRows(LIVE_DATA);
+  const m=computeAll(rows);
+  render(m);
+  document.getElementById('filter-result').textContent=rows.length+' hojas';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CÓMPUTO DE MÉTRICAS
+function computeAll(rows){
+  const N=rows.length;
+  if(!N) return null;
+  const uniqOrds=new Set(rows.map(r=>r[1]));
+  const lts=rows.map(r=>r[8]).filter(v=>v!==null&&v<480);
+  const avgLt=lts.length?Math.round(lts.reduce((a,b)=>a+b,0)/lts.length*10)/10:0;
+  const sla=lts.length?Math.round(lts.filter(v=>v<=120).length/lts.length*1000)/10:0;
+  const man=rows.filter(r=>r[4].startsWith('MA')).length;
+  const tar=N-man;
+  const ter=rows.filter(r=>r[7].startsWith('TER')).length;
+
+  // Daily
+  const dh={},dp={},dOrd={};
+  rows.forEach(r=>{
+    const k=r[0].slice(8,10)+'/'+r[0].slice(5,7);
+    const ms=new Date(r[0]+'T00:00:00Z').getTime();
+    dh[k]=(dh[k]||0)+1;
+    if(!dp[k])dp[k]=new Set(); dp[k].add(r[1]);
+    if(!(k in dOrd)||ms<dOrd[k])dOrd[k]=ms;
+  });
+  const sd=Object.keys(dh).sort((a,b)=>dOrd[a]-dOrd[b]);
+
+  // Pickers
+  const ph={},pu={},pltArr={},pdays={},pturno={};
+  rows.forEach(r=>{
+    const p=r[3];
+    ph[p]=(ph[p]||0)+1;
+    if(!pu[p])pu[p]=new Set(); pu[p].add(r[1]);
+    if(r[8]!==null&&r[8]<480){if(!pltArr[p])pltArr[p]=[];pltArr[p].push(r[8]);}
+    if(!pdays[p])pdays[p]=new Set(); pdays[p].add(r[0]);
+    pturno[p]=pturno[p]||{M:0,T:0};
+    if(r[4].startsWith('MA'))pturno[p].M++;else pturno[p].T++;
+  });
+  const pkl=Object.entries(ph).sort((a,b)=>b[1]-a[1]);
+  const pickerStats=pkl.map(([p,h])=>{
+    const lArr=pltArr[p]||[];
+    const lt=lArr.length?Math.round(lArr.reduce((a,b)=>a+b,0)/lArr.length*10)/10:null;
+    const slaP=lArr.length?Math.round(lArr.filter(v=>v<=120).length/lArr.length*1000)/10:null;
+    const dias=pdays[p].size;
+    const tm=pturno[p]||{M:0,T:0};
+    return{name:p,hojas:h,pedidos:pu[p].size,lt,sla:slaP,hd:Math.round(h/dias*10)/10,turno:tm.M>=tm.T?'Mañana':'Tarde'};
+  });
+
+  // LT sorted
+  const ltSorted=pickerStats.filter(p=>p.lt!==null).sort((a,b)=>a.lt-b.lt);
+
+  // SLA per picker
+  const slaSorted=pickerStats.filter(p=>p.sla!==null).sort((a,b)=>a.sla-b.sla);
+
+  // Filters 2 & 3
+  const f2={},f3={};
+  rows.forEach(r=>{if(r[5])f2[r[5]]=(f2[r[5]]||0)+1; if(r[6])f3[r[6]]=(f3[r[6]]||0)+1;});
+  const f2s=Object.entries(f2).sort((a,b)=>b[1]-a[1]);
+  const f3s=Object.entries(f3).sort((a,b)=>b[1]-a[1]);
+
+  // Sheets/order
+  const mx={};
+  rows.forEach(r=>{const k=r[1];const h=r[2];if(!mx[k]||h>mx[k])mx[k]=h;});
+  const sdist={};
+  Object.values(mx).forEach(n=>{sdist[n]=(sdist[n]||0)+1;});
+  const shL=[],shV=[];
+  for(let i=1;i<=9;i++){if(sdist[i]){shL.push(i===1?'1 hoja':i+' hojas');shV.push(sdist[i]);}}
+
+  // LT histogram
+  const buckets=[0,0,0,0,0,0];
+  lts.forEach(v=>{
+    if(v<30)buckets[0]++;
+    else if(v<60)buckets[1]++;
+    else if(v<90)buckets[2]++;
+    else if(v<=120)buckets[3]++;
+    else if(v<=180)buckets[4]++;
+    else buckets[5]++;
+  });
+
+  // Weekly comparison
+  const weekMap={};
+  rows.forEach(r=>{
+    const d=new Date(r[0]+'T00:00:00Z');
+    const wd=d.getUTCDay(); const off=wd===0?-6:1-wd;
+    const mon=new Date(d); mon.setUTCDate(d.getUTCDate()+off);
+    const wk=mon.toISOString().slice(0,10);
+    if(!weekMap[wk])weekMap[wk]={h:0,lt:[]};
+    weekMap[wk].h++;
+    if(r[8]!==null&&r[8]<480)weekMap[wk].lt.push(r[8]);
+  });
+  const wkSorted=Object.keys(weekMap).sort();
+  const weekLabels=wkSorted.map((k,i)=>'Sem '+(i+1)+' ('+fmtShort(k)+')');
+  const weekHojas=wkSorted.map(k=>weekMap[k].h);
+  const weekLT=wkSorted.map(k=>weekMap[k].lt.length?Math.round(weekMap[k].lt.reduce((a,b)=>a+b,0)/weekMap[k].lt.length):0);
+
+  // Date range
+  const meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  let rng='';
+  if(sd.length){
+    const fd=new Date(dOrd[sd[0]]); const ld=new Date(dOrd[sd[sd.length-1]]);
+    if(fd.getUTCMonth()===ld.getUTCMonth())
+      rng=`${String(fd.getUTCDate()).padStart(2,'0')} al ${ld.getUTCDate()} de ${meses[fd.getUTCMonth()]} ${fd.getUTCFullYear()}`;
+    else rng=sd[0]+' al '+sd[sd.length-1];
+  }
+
+  return{N,uniq:uniqOrds.size,avgLt,sla,man,tar,pctM:Math.round(man/N*1000)/10,
+    ter,loc:N-ter,dias:sd.length,rng,
+    dailyL:sd,dailyH:sd.map(d=>dh[d]),dailyO:sd.map(d=>dp[d].size),
+    pkl:pkl.map(e=>e[0]),pkH:pkl.map(e=>e[1]),pkU:pkl.map(e=>pu[e[0]].size),
+    ltSorted,slaSorted,pickerStats,
+    ltL:ltSorted.map(p=>p.name),ltV:ltSorted.map(p=>p.lt),
+    f2l:f2s.map(e=>e[0]),f2v:f2s.map(e=>e[1]),
+    f3l:f3s.map(e=>e[0]),f3v:f3s.map(e=>e[1]),
+    shL,shV,
+    ltBuckets:buckets,weekLabels,weekHojas,weekLT,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER
+function render(m){
+  if(!m){document.getElementById('filter-result').textContent='Sin datos';return;}
+  // KPIs
+  document.getElementById('kv-hojas').textContent=m.N;
+  document.getElementById('ks-hojas').textContent=m.dias+' días de producción';
+  document.getElementById('kv-pedidos').textContent=m.uniq;
+  document.getElementById('ks-pedidos').textContent='~'+(m.N/m.uniq).toFixed(1)+' hojas por pedido';
+  document.getElementById('kv-lt').innerHTML=m.avgLt+'<span style="font-size:14px;font-weight:400"> min</span>';
+  document.getElementById('ks-lt').innerHTML='<b>'+m.sla+'%</b> dentro del SLA ≤120 min';
+  document.getElementById('kv-man').innerHTML=m.pctM+'<span style="font-size:14px;font-weight:400">%</span>';
+  document.getElementById('ks-man').textContent=m.man+' hojas vs '+m.tar+' tarde';
+  const pM=Math.round(m.pctM),pT=100-pM;
+  const pTer=Math.round(m.ter/(m.ter+m.loc)*100);
+  document.getElementById('leg-man').textContent='Mañana '+pM+'%';
+  document.getElementById('leg-tar').textContent='Tarde '+pT+'%';
+  document.getElementById('leg-ter').textContent='Tercero '+pTer+'%';
+  document.getElementById('leg-loc').textContent='Local '+(100-pTer)+'%';
+  document.getElementById('tab-period').textContent=m.rng+' · '+m.dias+' días';
+  document.getElementById('filter-result').textContent=m.N+' hojas';
+
+  // Charts
+  upd('c1',{labels:m.pkl,datasets:[
+    {label:'Hojas',data:m.pkH,backgroundColor:'#378ADD',borderRadius:3,barPercentage:.7},
+    {label:'Únicos',data:m.pkU,backgroundColor:'#1D9E75',borderRadius:3,barPercentage:.7}
+  ]});
+  upd('c2',{labels:m.dailyL,datasets:[
+    {label:'Hojas',data:m.dailyH,borderColor:'#BA7517',backgroundColor:'rgba(186,117,23,0.08)',
+     pointBackgroundColor:'#BA7517',tension:.35,fill:true,pointRadius:4},
+    {label:'Pedidos',data:m.dailyO,borderColor:'#D85A30',backgroundColor:'transparent',
+     pointBackgroundColor:'#D85A30',tension:.35,fill:false,pointRadius:4,borderDash:[4,3]}
+  ]});
+  upd('c3',{labels:m.ltL,datasets:[{label:'Min',data:m.ltV,
+    backgroundColor:m.ltV.map(v=>v<65?'#1D9E75':v<90?'#378ADD':v<120?'#EF9F27':'#D85A30'),
+    borderRadius:3}]},{indexAxis:'y',scales:{x:{ticks:{color:tick,font:{size:10},callback:v=>v+'m'},grid:{color:gridColor}},y:{ticks:{color:tick,font:{size:10}},grid:{display:false}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw.toFixed(1)+' min'}}}});
+  upd('c4',{labels:['Mañana','Tarde'],datasets:[{data:[m.man,m.tar],backgroundColor:['#378ADD','#B5D4F4'],borderWidth:0,hoverOffset:4}]},{cutout:'68%',plugins:{legend:{display:false}}});
+  upd('c5',{labels:['Tercero','Local'],datasets:[{data:[m.ter,m.loc],backgroundColor:['#1D9E75','#9FE1CB'],borderWidth:0,hoverOffset:4}]},{cutout:'68%',plugins:{legend:{display:false}}});
+  upd('c6',{labels:m.f2l,datasets:[{data:m.f2v,backgroundColor:'#5DCAA5',borderRadius:3,barPercentage:.65}]});
+  upd('c7',{labels:m.f3l,datasets:[{data:m.f3v,backgroundColor:'#1D9E75',borderRadius:3,barPercentage:.65}]});
+  upd('c8',{labels:m.shL,datasets:[{data:m.shV,backgroundColor:'#7F77DD',borderRadius:3,barPercentage:.7}]});
+
+  // Histogram
+  const bucketL=['< 30 min','30-60 min','60-90 min','90-120 min','120-180 min','> 180 min'];
+  const bucketC=['#1D9E75','#1D9E75','#378ADD','#378ADD','#EF9F27','#D85A30'];
+  upd('c9',{labels:bucketL,datasets:[{data:m.ltBuckets,backgroundColor:bucketC,borderRadius:3,barPercentage:.75}]},{plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+' hojas'}}}});
+
+  // SLA per picker
+  const slaPct=m.slaSorted.map(p=>p.sla);
+  const slaNam=m.slaSorted.map(p=>p.name);
+  upd('c10',{labels:slaNam,datasets:[{data:slaPct,
+    backgroundColor:slaPct.map(v=>v>=85?'#1D9E75':v>=70?'#EF9F27':'#D85A30'),
+    borderRadius:3}]},{indexAxis:'y',scales:{x:{ticks:{color:tick,font:{size:10},callback:v=>v+'%',max:100},grid:{color:gridColor}},y:{ticks:{color:tick,font:{size:10}},grid:{display:false}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+'%'}}}});
+
+  // Week comparison
+  upd('c11',{labels:m.weekLabels,datasets:[
+    {type:'bar',label:'Hojas',data:m.weekHojas,backgroundColor:'#378ADD',borderRadius:3,yAxisID:'y'},
+    {type:'line',label:'LT prom.',data:m.weekLT,borderColor:'#D85A30',pointBackgroundColor:'#D85A30',tension:.35,pointRadius:5,yAxisID:'y2'}
+  ]},{scales:{
+    y:{ticks:{color:tick,font:{size:10}},grid:{color:gridColor},position:'left'},
+    y2:{ticks:{color:'#D85A30',font:{size:10},callback:v=>v+'m'},grid:{display:false},position:'right'}
+  },plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10},color:tick}}}});
+
+  // Picker table
+  renderTable(m.pickerStats);
+}
+
+function upd(id,data,extraOpts={}){
+  if(charts[id]) charts[id].destroy();
+  const el=document.getElementById(id);
+  if(!el) return;
+  const type=id==='c4'||id==='c5'?'doughnut':(id==='c2'?'line':(id==='c3'||id==='c10'?'bar':'bar'));
+  charts[id]=new Chart(el,{type,data,
+    options:{...tO,...noL,
+      scales:type==='doughnut'?undefined:(extraOpts.scales||{x:{ticks:{color:tick,font:{size:11}},grid:{display:false}},y:{ticks:{color:tick,font:{size:11}},grid:{color:gridColor}}}),
+      ...extraOpts}});
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PICKER TABLE
+let sortCol=1,sortDir=-1; // default: hojas desc
+function renderTable(stats){
+  const s=[...stats];
+  const cols=[p=>p.name,p=>p.hojas,p=>p.pedidos,p=>p.lt??-1,p=>p.sla??-1,p=>p.hd,p=>p.turno];
+  s.sort((a,b)=>{const va=cols[sortCol](a),vb=cols[sortCol](b);return sortDir*(vb>va?1:vb<va?-1:0);});
+  const tb=document.getElementById('picker-tbody');
+  tb.innerHTML=s.map(p=>{
+    const slaOk=p.sla!==null&&p.sla>=85, slaWarn=p.sla!==null&&p.sla>=70;
+    const ltOk=p.lt!==null&&p.lt<90, ltWarn=p.lt!==null&&p.lt<120;
+    const ok=slaOk&&ltOk, warn=(slaWarn||ltWarn)&&!ok;
+    const badge=ok?'<span class="badge ok">🟢 Óptimo</span>':warn?'<span class="badge warn">🟡 Regular</span>':'<span class="badge crit">🔴 Crítico</span>';
+    const slaFill=p.sla!==null?`<div class="sla-bar-wrap"><div class="sla-bar"><div class="sla-fill ${p.sla>=85?'':p.sla>=70?'warn':'crit'}" style="width:${p.sla}%"></div></div><span style="font-size:10px;color:var(--color-text-secondary);min-width:32px">${p.sla}%</span></div>`:'—';
+    return`<tr><td class="picker-name">${p.name}</td><td>${p.hojas}</td><td>${p.pedidos}</td><td>${p.lt!==null?p.lt+' min':'—'}</td><td>${slaFill}</td><td>${p.hd}</td><td><span style="font-size:10px">${p.turno}</span></td><td>${badge}</td></tr>`;
+  }).join('');
+  // Sort headers
+  document.querySelectorAll('.ptable th').forEach((th,i)=>{
+    th.className=i===sortCol?(sortDir<0?'sort-desc':'sort-asc'):'';
+  });
+}
+function sortTable(col){
+  if(sortCol===col) sortDir*=-1; else{sortCol=col;sortDir=-1;}
+  const rows=filterRows(LIVE_DATA);
+  const m=computeAll(rows);
+  if(m) renderTable(m.pickerStats);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXCEL UPLOAD
+let pendingRows=null;
+function handleFile(ev){const f=ev.target.files[0];if(f)doProcess(f);ev.target.value='';}
+function doProcess(file){
+  const box=document.getElementById('statusBox');
+  box.style.display='block';box.className='status-box';box.textContent='⏳ Procesando...';
+  document.getElementById('prevGrid').style.display='none';
+  document.getElementById('actRow').style.display='none';
+  pendingRows=null;
+  const rd=new FileReader();
+  rd.onload=e=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+      const sn=wb.SheetNames.find(n=>n.toLowerCase()==='produccion')||wb.SheetNames[0];
+      const rawRows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{raw:true,defval:null});
+      if(!rawRows.length) throw new Error('Hoja vacía');
+      const parsed=parseXLRows(rawRows);
+      pendingRows=parsed;
+      box.className='status-box ok';
+      box.innerHTML=`✅ <strong>${file.name}</strong> · Hoja: <strong>${sn}</strong> · ${rawRows.length} filas · ${parsed.length} válidas`;
+      const m=computeAll(parsed);
+      if(m){
+        const items=[['Total hojas',m.N],['Pedidos únicos',m.uniq],['Leadtime prom.',m.avgLt+' min'],['SLA ≤120min',m.sla+'%'],['Días producción',m.dias],['Turno mañana',m.pctM+'%']];
+        const g=document.getElementById('prevGrid');
+        g.innerHTML=items.map(([k,v])=>`<div class="prev-card"><div class="prev-k">${k}</div><div class="prev-v">${v}</div></div>`).join('');
+        g.style.display='grid';
+      }
+      document.getElementById('actRow').style.display='flex';
+    }catch(err){box.className='status-box err';box.textContent='❌ '+err.message;}
+  };
+  rd.readAsArrayBuffer(file);
+}
+function parseXLRows(rows){
+  const vk='N° PEDIDO';
+  return rows.filter(r=>r.PICKER&&r[vk]&&r.TURNO&&r.CLIENTE).map(r=>{
+    const fecha=toDateISO(r.FECHA);
+    const lt=toLtMin(r.LEADTIME);
+    return[fecha,+r[vk],+(r['N° HOJA']||1),String(r.PICKER).trim(),
+      String(r.TURNO).trim(),String(r['2DO FILTRO']||'').trim(),
+      String(r['3ER FILTRO']||'').trim(),String(r.CLIENTE).trim(),lt];
+  }).filter(r=>r[0]);
+}
+function toDateISO(v){
+  if(!v) return null;
+  if(v instanceof Date) return v.toISOString().slice(0,10);
+  if(typeof v==='number') return new Date(Math.round((v-25569)*86400000)).toISOString().slice(0,10);
+  return null;
+}
+function toLtMin(v){
+  if(v==null) return null;
+  let m;
+  if(v instanceof Date) m=v.getUTCHours()*60+v.getUTCMinutes()+v.getUTCSeconds()/60;
+  else if(typeof v==='number'&&v>0&&v<1) m=v*24*60;
+  else return null;
+  return(m>0&&m<480)?Math.round(m*10)/10:null;
+}
+function applyData(mode){
+  if(!pendingRows) return;
+  let combined;
+  if(mode==='merge'){
+    // Deduplicate by pedido+hoja+fecha
+    const existing=new Set(RAW_DATA.map(r=>r[0]+'-'+r[1]+'-'+r[2]));
+    const newOnly=pendingRows.filter(r=>!existing.has(r[0]+'-'+r[1]+'-'+r[2]));
+    combined=[...RAW_DATA,...newOnly];
+  } else {
+    combined=pendingRows;
+  }
+  LIVE_DATA = combined; // actualiza datos activos
+  buildFilterUI(combined);
+  applyFilters();
+  goTab('dashboard');
+}
+function dlHTML(){
+  const curRaw=LIVE_DATA;
+  const NL='\n';let src='<!DOCTYPE html>'+NL+document.documentElement.outerHTML;
+  const newBlock='// ---BEGIN_RAW---'+NL+'const RAW_DATA = '+JSON.stringify(curRaw,null,0)+';'+NL+'// ---END_RAW---'+NL+'let LIVE_DATA = RAW_DATA;';
+  src=src.replace(/\/\/ ---BEGIN_RAW---[\s\S]*?\/\/ ---END_RAW---/,()=>newBlock);
+  const blob=new Blob([src],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='PRODUCCION.html';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DRAG & DROP
+const dz=document.getElementById('dropZone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');const f=e.dataTransfer.files[0];if(f)doProcess(f);});
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+buildFilterUI(LIVE_DATA);
+applyFilters();
+</script>
+</body>
+</html>
