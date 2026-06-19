@@ -749,7 +749,12 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');co
     if(!res.ok) throw new Error('HTTP '+res.status+' — verifica que el Sheet sea público');
     const text = await res.text();
     const data = csvToRows(text);
-    if(!data.length) throw new Error('El Sheet está vacío o sin datos válidos');
+    if(!data.length){
+      // Log first few lines for debug
+      const firstLines = text.split('\n').slice(0,3).join(' | ');
+      console.error('CSV primeras líneas:', firstLines);
+      throw new Error('Sin datos válidos. Revisa consola para ver el formato del CSV.');
+    }
     LIVE_DATA = data;
     console.log('\u2705 Google Sheets cargado:', data.length, 'filas');
   }catch(e){
@@ -774,7 +779,17 @@ function csvToRows(csv){
   if(lines.length < 2) return [];
   // Parse header — find column indices
   const hdr = parseCsvLine(lines[0]);
-  const col = name => hdr.findIndex(h => h.trim().toUpperCase().replace(/[°\s]/g,'').includes(name));
+  // Busca columna por nombre exacto primero, luego parcial
+  const col = name => {
+    const clean = h => h.trim().toUpperCase().replace(/[°\s()]/g,'');
+    let idx = hdr.findIndex(h => clean(h) === name);
+    if(idx >= 0) return idx;
+    // Parcial — evitar falsos positivos (PICKER vs PICKING)
+    return hdr.findIndex(h => {
+      const ch = clean(h);
+      return ch === name || (ch.includes(name) && !ch.includes(name+'ING') && !ch.includes(name+'ED'));
+    });
+  };
   const iF   = col('FECHA');
   const iPed = col('PEDIDO');
   const iHoj = col('HOJA');
@@ -784,13 +799,22 @@ function csvToRows(csv){
   const iF3  = col('3ER');
   const iCli = col('CLIENTE');
   const iLT  = col('LEADTIME');
+  // Fallback: calcular LT desde HR INICIO(PICKING) y HR FINALIZADO
+  const iHini = col('HORAINICIO');
+  const iHfin = col('HRFINALIZADO');
+  console.log('Columnas encontradas:', {iF,iPed,iHoj,iPick,iTur,iF2,iF3,iCli,iLT,iHini,iHfin});
   const rows = [];
   for(let i=1;i<lines.length;i++){
     if(!lines[i].trim()) continue;
     const f = parseCsvLine(lines[i]);
     const fecha = parseSheetDate(f[iF]);
     if(!fecha || !f[iPick] || !f[iPed]) continue;
-    const lt = parseSheetLT(f[iLT]);
+    let lt = parseSheetLT(f[iLT]);
+    // Fallback: calcular LT = HR FINALIZADO - HR INICIO(PICKING)
+    if(lt===null && iHini>=0 && iHfin>=0){
+      const t1=parseSheetLT(f[iHini]), t2=parseSheetLT(f[iHfin]);
+      if(t1!==null&&t2!==null){const diff=t2-t1; if(diff>0&&diff<480)lt=Math.round(diff*10)/10;}
+    }
     rows.push([
       fecha,
       parseInt(f[iPed]) || 0,
@@ -820,20 +844,32 @@ function parseCsvLine(line){
 
 function parseSheetDate(s){
   if(!s||!s.trim()) return null;
-  s=s.trim();
-  // ISO: 2026-06-01
+  s=s.trim().replace(/"/g,'');
+  // ISO YYYY-MM-DD
   if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
-  // DD/MM/YYYY o D/M/YYYY
+  // Formato con /
   const p=s.split('/');
   if(p.length===3){
-    const [a,b,y]=p;
+    let [a,b,y]=p;
+    // Año 2 dígitos → 4 dígitos (26 → 2026)
+    if(y.length<=2) y='20'+y.padStart(2,'0');
     if(y.length===4){
+      const ia=parseInt(a), ib=parseInt(b);
+      // Si a>12 → seguro D/M/Y (formato peruano)
+      // Si b>12 → seguro M/D/Y (formato US)
+      // Default Peru → D/M/Y
+      if(ia>12) return y+'-'+b.padStart(2,'0')+'-'+a.padStart(2,'0');
+      if(ib>12) return y+'-'+a.padStart(2,'0')+'-'+b.padStart(2,'0');
+      // Ambiguo — asumir D/M/Y (Peru)
       return y+'-'+b.padStart(2,'0')+'-'+a.padStart(2,'0');
     }
-    // M/D/YYYY (formato US)
-    if(p[2].length===4){
-      return p[2]+'-'+p[0].padStart(2,'0')+'-'+p[1].padStart(2,'0');
-    }
+  }
+  // Formato con - (D-M-Y o M-D-Y)
+  const pd=s.split('-');
+  if(pd.length===3&&pd[0].length<=2){
+    let [a,b,y]=pd;
+    if(y.length<=2) y='20'+y.padStart(2,'0');
+    return y+'-'+b.padStart(2,'0')+'-'+a.padStart(2,'0');
   }
   return null;
 }
