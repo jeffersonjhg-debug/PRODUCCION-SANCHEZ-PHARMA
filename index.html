@@ -312,7 +312,8 @@ code{background:#fff;border:1px solid var(--color-border-tertiary);padding:1px 5
 // ═══════════════════════════════════════════════════════════════
 // DATOS EMBEBIDOS — columnas: [fecha,pedido,hoja,picker,turno,f2,f3,cliente,lt_min]
 // ══ URL DEL GOOGLE SHEET PUBLICADO ════════════════════════════
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/2PACX-1vT4LyvwMguqklRXCZ49Coknwe_z5_JOihlfU_zpSJhzmC9kMDrHyoYTpAHqW4nT2FHMXexZGdVyAQMU/pub?gid=0&single=true&output=csv';
+const CSV_URL   = 'https://docs.google.com/spreadsheets/d/1bNMiEKIH8RwdQd0c3JL2Wo6lMvLmuzXvsl2XsmcIJp4/gviz/tq?tqx=out:csv&gid=0';
+const CSV_URL_2 = 'https://docs.google.com/spreadsheets/d/1bNMiEKIH8RwdQd0c3JL2Wo6lMvLmuzXvsl2XsmcIJp4/export?format=csv&gid=0';
 // ════════════════════════════════════════════════════════════════
 let LIVE_DATA = []; // datos activos (puede acumularse)
 
@@ -739,7 +740,12 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');co
   const loader = document.getElementById('dash-loader');
   if(loader) loader.style.display='flex';
   try{
-    const res = await fetch(CSV_URL);
+    // Intenta gviz primero (no requiere "Publicar en la web")
+    let res = await fetch(CSV_URL);
+    if(!res.ok) {
+      console.warn('gviz falló, intentando export URL...');
+      res = await fetch(CSV_URL_2);
+    }
     if(!res.ok) throw new Error('HTTP '+res.status+' — verifica que el Sheet sea público');
     const text = await res.text();
     const data = csvToRows(text);
