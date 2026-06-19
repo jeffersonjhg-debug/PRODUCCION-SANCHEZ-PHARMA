@@ -28,17 +28,62 @@ body{font-family:var(--font-sans);background:#edf0f5}
 .tab-period{margin-left:auto;font-size:11px;color:var(--color-text-secondary)}
 
 /* FILTER BAR */
-.filter-bar{display:flex;align-items:center;gap:12px;padding:7px 1.2rem;background:#fff;
-  border-bottom:1px solid var(--color-border-tertiary);flex-wrap:wrap}
-.filter-group{display:flex;align-items:center;gap:5px}
-.filter-lbl{font-size:10px;font-weight:600;color:var(--color-text-secondary);
-  text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
-.filter-btn{padding:3px 10px;border-radius:5px;border:1px solid var(--color-border-tertiary);
-  background:transparent;font-size:11px;cursor:pointer;color:var(--color-text-secondary);transition:all .12s}
-.filter-btn:hover{border-color:#2563eb;color:#2563eb}
-.filter-btn.on{background:#2563eb;border-color:#2563eb;color:#fff}
+.filter-bar{display:flex;align-items:center;gap:10px;padding:6px 1.2rem;background:#fff;
+  border-bottom:1px solid var(--color-border-tertiary);flex-wrap:wrap;position:sticky;top:54px;z-index:15}
+.filter-lbl{font-size:10px;font-weight:700;color:var(--color-text-secondary);
+  text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+/* Mes pills */
+.mes-pills{display:flex;gap:4px;flex-wrap:wrap}
+.mes-pill{padding:3px 10px;border-radius:20px;border:1px solid var(--color-border-tertiary);
+  background:transparent;font-size:11px;cursor:pointer;color:var(--color-text-secondary);
+  transition:all .12s;white-space:nowrap}
+.mes-pill:hover{border-color:#2563eb;color:#2563eb}
+.mes-pill.on{background:#2563eb;border-color:#2563eb;color:#fff;font-weight:600}
+/* Week dropdown */
+.week-wrap{position:relative}
+.week-trigger{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;
+  border:1px solid var(--color-border-tertiary);background:#fff;font-size:11px;
+  cursor:pointer;color:var(--color-text-secondary);transition:all .12s;white-space:nowrap}
+.week-trigger:hover,.week-trigger.open{border-color:#2563eb;color:#2563eb}
+.week-trigger .wt-count{background:#2563eb;color:#fff;border-radius:10px;
+  padding:0 5px;font-size:10px;font-weight:700;margin-left:2px}
+.week-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;
+  background:#fff;border:1px solid var(--color-border-tertiary);border-radius:8px;
+  box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;min-width:220px;overflow:hidden}
+.week-panel.open{display:block}
+.week-panel-hdr{display:flex;gap:6px;padding:7px 10px;border-bottom:1px solid var(--color-border-tertiary);background:#f8faff}
+.wph-btn{padding:2px 8px;border-radius:4px;border:1px solid var(--color-border-tertiary);
+  font-size:10px;cursor:pointer;background:#fff;color:#374151;transition:all .1s}
+.wph-btn:hover{background:#2563eb;color:#fff;border-color:#2563eb}
+.week-list{max-height:240px;overflow-y:auto;padding:4px 0}
+.week-item{display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;transition:background .1s}
+.week-item:hover{background:#f0f7ff}
+.week-item.checked{background:#eef4ff}
+.week-item input[type=checkbox]{accent-color:#2563eb;cursor:pointer;width:14px;height:14px}
+.week-item label{font-size:11px;color:#374151;cursor:pointer;flex:1}
+.week-item .week-cnt{font-size:10px;color:#94a3b8;margin-left:auto}
 .filter-divider{width:1px;height:18px;background:var(--color-border-tertiary)}
-.filter-result{margin-left:auto;font-size:11px;color:var(--color-text-secondary)}
+.filter-result{margin-left:auto;font-size:11px;color:var(--color-text-secondary);white-space:nowrap}
+/* Incidencias tab */
+.inc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:11px}
+.inc-stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.inc-stat-lbl{font-size:10px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.inc-stat-val{font-size:22px;font-weight:600;color:#dc2626;line-height:1}
+.inc-stat-sub{font-size:11px;color:var(--color-text-secondary);margin-top:3px}
+.inc-search{width:100%;padding:7px 12px;border:1px solid var(--color-border-tertiary);
+  border-radius:7px;font-size:12px;margin-bottom:10px;outline:none}
+.inc-search:focus{border-color:#2563eb}
+.inc-table{width:100%;border-collapse:collapse;font-size:11px}
+.inc-table th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--color-text-secondary);padding:7px 8px;border-bottom:1px solid var(--color-border-tertiary);text-align:left;white-space:nowrap}
+.inc-table td{padding:7px 8px;border-bottom:.5px solid var(--color-border-tertiary);vertical-align:top}
+.inc-table tr:last-child td{border-bottom:none}
+.inc-table tr:hover td{background:#fef9f9}
+.inc-badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.inc-badge.dep{background:#fee2e2;color:#b91c1c}
+.inc-badge.obs{background:#fef9c3;color:#a16207}
+.inc-empty{text-align:center;padding:3rem;color:var(--color-text-secondary);font-size:13px}
+.charts-two{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:11px}
 
 /* PANES */
 .pane{display:none;padding:1rem 1.2rem}
@@ -122,18 +167,28 @@ code{background:#fff;border:1px solid var(--color-border-tertiary);padding:1px 5
 <div class="tab-bar">
   <button class="tab-btn active" onclick="goTab('dashboard')">📊 Dashboard</button>
   <button class="tab-btn" onclick="goTab('cargar')">📂 Cargar Excel</button>
+  <button class="tab-btn" onclick="goTab('incidencias')">🚨 Incidencias <span id="inc-badge" style="background:#dc2626;color:#fff;border-radius:10px;padding:0 5px;font-size:10px;margin-left:2px;display:none">0</span></button>
   <span class="tab-period" id="tab-period">Jun 2026 · 12 días</span>
 </div>
 
 <div class="filter-bar" id="filterBar">
-  <div class="filter-group">
-    <span class="filter-lbl">Mes</span>
-    <div id="mes-btns"></div>
-  </div>
+  <span class="filter-lbl">MES</span>
+  <div class="mes-pills" id="mes-pills"></div>
   <div class="filter-divider"></div>
-  <div class="filter-group">
-    <span class="filter-lbl">Semana</span>
-    <div id="sem-btns" style="display:flex;gap:5px"></div>
+  <span class="filter-lbl">SEMANA</span>
+  <div class="week-wrap">
+    <button class="week-trigger" id="weekTrigger" onclick="toggleWeekPanel()">
+      <span id="weekTriggerTxt">Todas</span>
+      <span>▼</span>
+    </button>
+    <div class="week-panel" id="weekPanel">
+      <div class="week-panel-hdr">
+        <button class="wph-btn" onclick="selectAllWeeks()">Todas</button>
+        <button class="wph-btn" onclick="clearWeeks()">Ninguna</button>
+        <button class="wph-btn" onclick="applyWeeks()">✓ Aplicar</button>
+      </div>
+      <div class="week-list" id="weekList"></div>
+    </div>
   </div>
   <span class="filter-result" id="filter-result"></span>
 </div>
@@ -179,7 +234,7 @@ code{background:#fff;border:1px solid var(--color-border-tertiary);padding:1px 5
       <span><span class="legend-dot" style="background:#378ADD"></span>Hojas totales</span>
       <span><span class="legend-dot" style="background:#1D9E75"></span>Pedidos únicos</span>
     </div>
-    <div style="position:relative;width:100%;height:230px"><canvas id="c1"></canvas></div>
+    <div style="position:relative;width:100%;height:175px"><canvas id="c1"></canvas></div>
   </div>
   <div class="card">
     <div class="card-title">Producción diaria — hojas por fecha</div>
@@ -187,14 +242,14 @@ code{background:#fff;border:1px solid var(--color-border-tertiary);padding:1px 5
       <span><span class="legend-dot" style="background:#BA7517;border-radius:50%"></span>Hojas</span>
       <span><span class="legend-dot" style="background:#D85A30;border-radius:50%"></span>Pedidos únicos</span>
     </div>
-    <div style="position:relative;width:100%;height:230px"><canvas id="c2"></canvas></div>
+    <div style="position:relative;width:100%;height:175px"><canvas id="c2"></canvas></div>
   </div>
 </div>
 
 <div class="charts-row">
   <div class="card">
     <div class="card-title">Leadtime promedio por picker (minutos)</div>
-    <div style="position:relative;width:100%;height:200px"><canvas id="c3"></canvas></div>
+    <div style="position:relative;width:100%;height:128px"><canvas id="c3"></canvas></div>
   </div>
   <div class="card">
     <div class="card-title">Distribución turno y cliente</div>
@@ -205,7 +260,7 @@ code{background:#fff;border:1px solid var(--color-border-tertiary);padding:1px 5
           <span><span class="legend-dot" style="background:#378ADD"></span><span id="leg-man">Mañana</span></span>
           <span><span class="legend-dot" style="background:#B5D4F4"></span><span id="leg-tar">Tarde</span></span>
         </div>
-        <div style="position:relative;width:100%;height:140px"><canvas id="c4"></canvas></div>
+        <div style="position:relative;width:100%;height:115px"><canvas id="c4"></canvas></div>
       </div>
       <div>
         <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:5px">Por cliente</div>
@@ -213,7 +268,7 @@ code{background:#fff;border:1px solid var(--color-border-tertiary);padding:1px 5
           <span><span class="legend-dot" style="background:#1D9E75"></span><span id="leg-ter">Tercero</span></span>
           <span><span class="legend-dot" style="background:#9FE1CB"></span><span id="leg-loc">Local</span></span>
         </div>
-        <div style="position:relative;width:100%;height:140px"><canvas id="c5"></canvas></div>
+        <div style="position:relative;width:100%;height:115px"><canvas id="c5"></canvas></div>
       </div>
     </div>
   </div>
@@ -222,16 +277,16 @@ code{background:#fff;border:1px solid var(--color-border-tertiary);padding:1px 5
 <div class="charts-bottom">
   <div class="card">
     <div class="card-title">2° filtro — empacado y revisado</div>
-    <div style="position:relative;width:100%;height:180px"><canvas id="c6"></canvas></div>
+    <div style="position:relative;width:100%;height:145px"><canvas id="c6"></canvas></div>
   </div>
   <div class="card">
     <div class="card-title">3° filtro — verificación final</div>
-    <div style="position:relative;width:100%;height:180px"><canvas id="c7"></canvas></div>
+    <div style="position:relative;width:100%;height:145px"><canvas id="c7"></canvas></div>
   </div>
   <div class="card">
     <div class="card-title">Hojas por pedido</div>
     <div class="legend"><span><span class="legend-dot" style="background:#534AB7"></span>N° pedidos</span></div>
-    <div style="position:relative;width:100%;height:160px"><canvas id="c8"></canvas></div>
+    <div style="position:relative;width:100%;height:128px"><canvas id="c8"></canvas></div>
   </div>
 </div>
 
@@ -263,15 +318,15 @@ code{background:#fff;border:1px solid var(--color-border-tertiary);padding:1px 5
 <div class="charts-analysis">
   <div class="card">
     <div class="card-title">Distribución de leadtime (histograma)</div>
-    <div style="position:relative;width:100%;height:195px"><canvas id="c9"></canvas></div>
+    <div style="position:relative;width:100%;height:158px"><canvas id="c9"></canvas></div>
   </div>
   <div class="card">
     <div class="card-title">% SLA cumplido por picker</div>
-    <div style="position:relative;width:100%;height:195px"><canvas id="c10"></canvas></div>
+    <div style="position:relative;width:100%;height:158px"><canvas id="c10"></canvas></div>
   </div>
   <div class="card">
     <div class="card-title">Comparativo semanal</div>
-    <div style="position:relative;width:100%;height:195px"><canvas id="c11"></canvas></div>
+    <div style="position:relative;width:100%;height:158px"><canvas id="c11"></canvas></div>
   </div>
 </div>
 
@@ -306,6 +361,51 @@ code{background:#fff;border:1px solid var(--color-border-tertiary);padding:1px 5
   </div>
 </div>
 
+<div id="pane-incidencias" class="pane">
+  <div class="inc-stats">
+    <div class="inc-stat">
+      <div class="inc-stat-lbl">Total incidencias</div>
+      <div class="inc-stat-val" id="inc-total">0</div>
+      <div class="inc-stat-sub" id="inc-period-lbl">en el período</div>
+    </div>
+    <div class="inc-stat">
+      <div class="inc-stat-lbl">Picker con más incidencias</div>
+      <div class="inc-stat-val" id="inc-top-picker" style="font-size:16px">—</div>
+      <div class="inc-stat-sub" id="inc-top-picker-cnt"></div>
+    </div>
+    <div class="inc-stat">
+      <div class="inc-stat-lbl">Días con incidencias</div>
+      <div class="inc-stat-val" id="inc-days">0</div>
+      <div class="inc-stat-sub">fechas afectadas</div>
+    </div>
+  </div>
+  <div class="charts-two" style="margin-bottom:11px">
+    <div class="card">
+      <div class="card-title">Incidencias por picker</div>
+      <div style="position:relative;width:100%;height:115px"><canvas id="c_inc1"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Incidencias por semana</div>
+      <div style="position:relative;width:100%;height:115px"><canvas id="c_inc2"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+      <div class="card-title" style="margin-bottom:0">📋 Historial de incidencias</div>
+      <input class="inc-search" id="incSearch" placeholder="🔍 Buscar picker, detalle..." style="width:260px;margin:0" oninput="renderIncTable()">
+    </div>
+    <div style="overflow-x:auto">
+      <table class="inc-table">
+        <thead><tr>
+          <th>Fecha</th><th>N° Pedido</th><th>Picker</th><th>Mesa</th>
+          <th>Tipo</th><th>Detalle</th><th>Responsable</th>
+        </tr></thead>
+        <tbody id="inc-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -319,7 +419,7 @@ let LIVE_DATA = []; // datos activos (puede acumularse)
 
 // ═══════════════════════════════════════════════════════════════
 // ESTADO DE FILTROS
-const F = { mes:'all', semana:'all' };
+const F = { mes:'all', semanas: new Set() }; // empty Set = todas
 let charts = {};
 const gridColor='rgba(128,128,128,0.1)', tick='#94a3b8';
 const tO={responsive:true,maintainAspectRatio:false};
@@ -332,74 +432,119 @@ function goTab(n){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('pane-'+n).classList.add('active');
   document.querySelectorAll('.tab-btn').forEach(b=>{if(b.onclick.toString().includes("'"+n+"'"))b.classList.add('active');});
-  document.getElementById('filterBar').style.display = n==='dashboard'?'flex':'none';
+  document.getElementById('filterBar').style.display=(n==='dashboard'||n==='incidencias')?'flex':'none';
+  if(n==='incidencias') renderIncidencias();
 }
 
 // ═══════════════════════════════════════════════════════════════
 // FILTROS DINÁMICOS
-function buildFilterUI(rows){
-  // Meses únicos
-  const meses={};
-  rows.forEach(r=>{ const m=r[0].slice(0,7); if(!meses[m]) meses[m]=0; meses[m]++; });
-  const mesNames={'01':'Ene','02':'Feb','03':'Mar','04':'Abr','05':'May','06':'Jun',
-    '07':'Jul','08':'Ago','09':'Sep','10':'Oct','11':'Nov','12':'Dic'};
-  const mb=document.getElementById('mes-btns');
-  mb.innerHTML='';
-  const allMB=mkBtn('Todos','all','mes'); mb.appendChild(allMB);
-  Object.keys(meses).sort().forEach(m=>{
-    const [y,mo]=m.split('-');
-    const b=mkBtn(mesNames[mo]+' '+y,m,'mes'); mb.appendChild(b);
-  });
-  // Semanas únicas (lun-dom)
-  const sems={};
-  rows.forEach(r=>{
-    const d=new Date(r[0]+'T00:00:00Z');
-    const wd=d.getUTCDay(); // 0=dom
-    const off=wd===0?-6:1-wd;
-    const mon=new Date(d); mon.setUTCDate(d.getUTCDate()+off);
-    const key=mon.toISOString().slice(0,10);
-    if(!sems[key]) sems[key]=0; sems[key]++;
-  });
-  const sb=document.getElementById('sem-btns');
-  sb.innerHTML='';
-  const allSB=mkBtn('Todas','all','semana'); sb.appendChild(allSB);
-  Object.keys(sems).sort().forEach((mon,i)=>{
-    const sun=new Date(mon+'T00:00:00Z'); sun.setUTCDate(sun.getUTCDate()+6);
-    const label=`S${i+1} (${fmtShort(mon)}-${fmtShort(sun.toISOString().slice(0,10))})`;
-    const b=mkBtn(label,mon,'semana'); sb.appendChild(b);
-  });
-  setFilterBtn('mes','all'); setFilterBtn('semana','all');
-}
+// ── SEMANA DATA ────────────────────────────────────────────────
+let WEEK_DATA = {}; // {weekStart: {label, count}}
+
 function fmtShort(iso){
   const [,m,d]=iso.split('-'); return d+'/'+m;
 }
-function mkBtn(label,val,group){
-  const b=document.createElement('button');
-  b.className='filter-btn'; b.textContent=label; b.dataset.val=val; b.dataset.group=group;
-  b.onclick=()=>setFilter(group,val);
-  return b;
-}
-function setFilter(group,val){
-  F[group]=val;
-  setFilterBtn(group,val);
-  // Reset other if changed
-  if(group==='mes'){ F.semana='all'; setFilterBtn('semana','all'); }
-  applyFilters();
-}
-function setFilterBtn(group,val){
-  const container=group==='mes'?document.getElementById('mes-btns'):document.getElementById('sem-btns');
-  container.querySelectorAll('.filter-btn').forEach(b=>{
-    b.classList.toggle('on', b.dataset.val===val);
+
+function buildFilterUI(rows){
+  // Meses
+  const mesMap={};
+  rows.forEach(r=>{ const m=r[0].slice(0,7); mesMap[m]=(mesMap[m]||0)+1; });
+  const mesNames={'01':'Ene','02':'Feb','03':'Mar','04':'Abr','05':'May','06':'Jun',
+    '07':'Jul','08':'Ago','09':'Sep','10':'Oct','11':'Nov','12':'Dic'};
+  const mp=document.getElementById('mes-pills');
+  mp.innerHTML='';
+  const addPill=(lbl,val)=>{
+    const b=document.createElement('button');
+    b.className='mes-pill'+(val==='all'?' on':'');
+    b.textContent=lbl; b.dataset.val=val;
+    b.onclick=()=>{
+      F.mes=val; F.semanas.clear();
+      mp.querySelectorAll('.mes-pill').forEach(p=>p.classList.toggle('on',p.dataset.val===val));
+      rebuildWeekList(rows); applyFilters();
+    };
+    mp.appendChild(b);
+  };
+  addPill('Todos','all');
+  Object.keys(mesMap).sort().forEach(m=>{ const [y,mo]=m.split('-'); addPill(mesNames[mo]+' '+y,m); });
+
+  // Semanas
+  WEEK_DATA={};
+  rows.forEach(r=>{
+    const ws=getWeekStart(r[0]);
+    if(!WEEK_DATA[ws]) WEEK_DATA[ws]={count:0};
+    WEEK_DATA[ws].count++;
   });
+  let i=0;
+  Object.keys(WEEK_DATA).sort().forEach(ws=>{
+    const sun=new Date(ws+'T00:00:00Z'); sun.setUTCDate(sun.getUTCDate()+6);
+    WEEK_DATA[ws].label=`S${++i} (${fmtShort(ws)}-${fmtShort(sun.toISOString().slice(0,10))})`;
+    WEEK_DATA[ws].idx=i;
+  });
+  rebuildWeekList(rows);
+}
+
+function rebuildWeekList(rows){
+  const filtered = F.mes==='all' ? rows : rows.filter(r=>r[0].startsWith(F.mes));
+  const weekCounts={};
+  filtered.forEach(r=>{ const ws=getWeekStart(r[0]); weekCounts[ws]=(weekCounts[ws]||0)+1; });
+  const wl=document.getElementById('weekList'); wl.innerHTML='';
+  Object.keys(weekCounts).sort().forEach(ws=>{
+    const wd=WEEK_DATA[ws]||{label:ws,count:weekCounts[ws]};
+    const item=document.createElement('div');
+    item.className='week-item'+(F.semanas.has(ws)?' checked':'');
+    item.innerHTML=`<input type="checkbox" id="wk_${ws}" ${F.semanas.has(ws)?'checked':''}>
+      <label for="wk_${ws}">${wd.label}</label>
+      <span class="week-cnt">${weekCounts[ws]}</span>`;
+    item.querySelector('input').onchange=e=>{
+      if(e.target.checked) F.semanas.add(ws); else F.semanas.delete(ws);
+      item.classList.toggle('checked',e.target.checked);
+      updateWeekTrigger();
+    };
+    wl.appendChild(item);
+  });
+  updateWeekTrigger();
+}
+
+function updateWeekTrigger(){
+  const n=F.semanas.size;
+  const t=document.getElementById('weekTriggerTxt');
+  const b=document.getElementById('weekTrigger');
+  let badge=b.querySelector('.wt-count');
+  if(n===0){ t.textContent='Todas'; if(badge) badge.remove(); }
+  else { t.textContent=n+' sem.'; if(!badge){badge=document.createElement('span');badge.className='wt-count';b.appendChild(badge);} badge.textContent=n; }
+}
+
+function toggleWeekPanel(){
+  const p=document.getElementById('weekPanel');
+  const t=document.getElementById('weekTrigger');
+  const open=p.classList.toggle('open');
+  t.classList.toggle('open',open);
+  if(open){
+    // Close when clicking outside
+    setTimeout(()=>{ document.addEventListener('click',closeWeekPanel,{once:true}); },10);
+  }
+}
+function closeWeekPanel(e){
+  const wrap=document.querySelector('.week-wrap');
+  if(!wrap.contains(e.target)){
+    document.getElementById('weekPanel').classList.remove('open');
+    document.getElementById('weekTrigger').classList.remove('open');
+  } else { document.addEventListener('click',closeWeekPanel,{once:true}); }
+}
+function selectAllWeeks(){ document.querySelectorAll('#weekList input[type=checkbox]').forEach(cb=>{cb.checked=true;F.semanas.add(cb.id.replace('wk_',''));cb.closest('.week-item').classList.add('checked');}); F.semanas.clear(); updateWeekTrigger(); }
+function clearWeeks(){ document.querySelectorAll('#weekList input[type=checkbox]').forEach(cb=>{cb.checked=false;cb.closest('.week-item').classList.remove('checked');}); F.semanas.clear(); updateWeekTrigger(); }
+function applyWeeks(){ document.getElementById('weekPanel').classList.remove('open'); document.getElementById('weekTrigger').classList.remove('open'); applyFilters(); }
+function getWeekStart(dateStr){
+  const d=new Date(dateStr+'T00:00:00Z');
+  const wd=d.getUTCDay(); const off=wd===0?-6:1-wd;
+  const m=new Date(d); m.setUTCDate(d.getUTCDate()+off);
+  return m.toISOString().slice(0,10);
 }
 function filterRows(rows){
   return rows.filter(r=>{
     if(F.mes!=='all' && !r[0].startsWith(F.mes)) return false;
-    if(F.semana!=='all'){
-      const d=new Date(r[0]+'T00:00:00Z');
-      const wd=d.getUTCDay(); const off=wd===0?-6:1-wd;
-      const mon=new Date(d); mon.setUTCDate(d.getUTCDate()+off);
-      if(mon.toISOString().slice(0,10)!==F.semana) return false;
+    if(F.semanas.size>0){
+      if(!F.semanas.has(getWeekStart(r[0]))) return false;
     }
     return true;
   });
@@ -591,6 +736,7 @@ function render(m){
 
   // Picker table
   renderTable(m.pickerStats);
+  renderIncidencias();
 }
 
 function upd(id,data,extraOpts={}){
@@ -670,9 +816,13 @@ function parseXLRows(rows){
   return rows.filter(r=>r.PICKER&&r[vk]&&r.TURNO&&r.CLIENTE).map(r=>{
     const fecha=toDateISO(r.FECHA);
     const lt=toLtMin(r.LEADTIME);
-    return[fecha,+r[vk],+(r['N° HOJA']||1),String(r.PICKER).trim(),
-      String(r.TURNO).trim(),String(r['2DO FILTRO']||'').trim(),
-      String(r['3ER FILTRO']||'').trim(),String(r.CLIENTE).trim(),lt];
+    return[fecha,+r[vk],+(r['N° HOJA']||1),String(r.PICKER||'').trim(),
+      String(r.TURNO||'').trim(),String(r['2DO FILTRO']||'').trim(),
+      String(r['3ER FILTRO']||'').trim(),String(r.CLIENTE||'').trim(),lt,
+      String(r['INCIDENCIA DEPORTADA']||r['INCIDENCIA']||'').trim(),
+      String(r['RESPONSABLE']||r['RESPONSABLE7']||'').trim(),
+      String(r['DETALLE DE INCIDENCIA']||r['DETALLE']||'').trim(),
+      String(r['N° MESA']||'').trim()];
   }).filter(r=>r[0]);
 }
 function toDateISO(v){
@@ -815,16 +965,25 @@ function csvToRows(csv){
       const t1=parseSheetLT(f[iHini]), t2=parseSheetLT(f[iHfin]);
       if(t1!==null&&t2!==null){const diff=t2-t1; if(diff>0&&diff<480)lt=Math.round(diff*10)/10;}
     }
+    // Columnas de incidencia (índices 9-12)
+    const iInc = hdr.findIndex(h=>h.toUpperCase().includes('INCIDENCIA'));
+    const iResp= hdr.findIndex(h=>h.toUpperCase().includes('RESPONSABLE'));
+    const iDet = hdr.findIndex(h=>h.toUpperCase().includes('DETALLE'));
+    const iMesa= col('MESA');
     rows.push([
-      fecha,
-      parseInt(f[iPed]) || 0,
-      parseInt(f[iHoj]) || 1,
-      (f[iPick]||'').trim(),
-      (f[iTur]||'').trim(),
-      (f[iF2]||'').trim(),
-      (f[iF3]||'').trim(),
-      (f[iCli]||'').trim(),
-      lt
+      fecha,                          // 0: fecha
+      parseInt(f[iPed]) || 0,         // 1: pedido
+      parseInt(f[iHoj]) || 1,         // 2: hoja
+      (f[iPick]||'').trim(),          // 3: picker
+      (f[iTur]||'').trim(),           // 4: turno
+      (f[iF2]||'').trim(),            // 5: filtro2
+      (f[iF3]||'').trim(),            // 6: filtro3
+      (f[iCli]||'').trim(),           // 7: cliente
+      lt,                             // 8: leadtime
+      (iInc>=0?f[iInc]||'':'').trim(), // 9: incidencia
+      (iResp>=0?f[iResp]||'':'').trim(),// 10: responsable
+      (iDet>=0?f[iDet]||'':'').trim(), // 11: detalle
+      (iMesa>=0?f[iMesa]||'':'').trim()// 12: mesa
     ]);
   }
   return rows.filter(r=>r[1]>0);
