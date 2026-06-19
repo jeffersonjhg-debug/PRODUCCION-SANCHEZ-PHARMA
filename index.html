@@ -761,7 +761,12 @@ function render(m){
 
   // Picker table
   renderTable(m.pickerStats);
-  // Incidencias se renderizan al abrir su tab
+  // Actualiza solo el badge de incidencias (sin charts — tab oculto)
+  try{
+    const incRows=LIVE_DATA.filter(r=>r[9]&&r[9].trim().length>0);
+    const b=document.getElementById('inc-badge');
+    if(b&&incRows.length>0){b.style.display='inline';b.textContent=incRows.length;}
+  }catch(e){}
 }
 
 function upd(id,data,extraOpts={}){
@@ -880,6 +885,77 @@ function applyData(mode){
   applyFilters();
   goTab('dashboard');
 }
+
+// ── INCIDENCIAS ────────────────────────────────────────────────────────────
+let INC_DATA = [];
+
+function renderIncidencias(){
+  try{
+    const rows = filterRows(LIVE_DATA).filter(r=>r[9]&&r[9].trim().length>0);
+    INC_DATA = rows;
+    // Badge
+    const badge = document.getElementById('inc-badge');
+    if(badge){ badge.style.display=rows.length>0?'inline':'none'; badge.textContent=rows.length; }
+    // Stats
+    const elTotal = document.getElementById('inc-total');
+    if(elTotal) elTotal.textContent = rows.length;
+    const byP={};
+    rows.forEach(r=>{ byP[r[3]]=(byP[r[3]]||0)+1; });
+    const topP=Object.entries(byP).sort((a,b)=>b[1]-a[1])[0];
+    const elPicker=document.getElementById('inc-top-picker');
+    const elPickerCnt=document.getElementById('inc-top-picker-cnt');
+    if(elPicker) elPicker.textContent=topP?topP[0]:'—';
+    if(elPickerCnt) elPickerCnt.textContent=topP?topP[1]+' incidencias':'';
+    const days=new Set(rows.map(r=>r[0]));
+    const elDays=document.getElementById('inc-days');
+    if(elDays) elDays.textContent=days.size;
+    // Chart: por picker
+    const byPSorted=Object.entries(byP).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    if(charts.c_inc1) charts.c_inc1.destroy();
+    const e1=document.getElementById('c_inc1');
+    if(e1) charts.c_inc1=new Chart(e1,{type:'bar',data:{
+      labels:byPSorted.map(e=>e[0]),
+      datasets:[{data:byPSorted.map(e=>e[1]),backgroundColor:'#dc2626',borderRadius:3,barPercentage:.7}]
+    },options:{...tO,...noL,scales:{x:{ticks:{color:tick,font:{size:10}},grid:{display:false}},y:{ticks:{color:tick,font:{size:10}},grid:{color:gridColor}}}}});
+    // Chart: por semana
+    const byW={};
+    rows.forEach(r=>{ const ws=getWeekStart(r[0]); byW[ws]=(byW[ws]||0)+1; });
+    const wSorted=Object.keys(byW).sort();
+    if(charts.c_inc2) charts.c_inc2.destroy();
+    const e2=document.getElementById('c_inc2');
+    if(e2) charts.c_inc2=new Chart(e2,{type:'bar',data:{
+      labels:wSorted.map((ws,i)=>WEEK_DATA[ws]?WEEK_DATA[ws].label:'S'+(i+1)),
+      datasets:[{data:wSorted.map(ws=>byW[ws]),backgroundColor:'#f97316',borderRadius:3,barPercentage:.7}]
+    },options:{...tO,...noL,scales:{x:{ticks:{color:tick,font:{size:10}},grid:{display:false}},y:{ticks:{color:tick,font:{size:10}},grid:{color:gridColor}}}}});
+    renderIncTable();
+  }catch(e){ console.error('renderIncidencias error:',e); }
+}
+
+function renderIncTable(){
+  const q=(document.getElementById('incSearch')?document.getElementById('incSearch').value||'':'').toLowerCase();
+  const rows=INC_DATA.filter(r=>!q||r[3].toLowerCase().includes(q)||r[11].toLowerCase().includes(q)||r[9].toLowerCase().includes(q));
+  const tb=document.getElementById('inc-tbody');
+  if(!tb) return;
+  if(!rows.length){
+    tb.innerHTML='<tr><td colspan="7"><div class="inc-empty">Sin incidencias en el período seleccionado</div></td></tr>';
+    return;
+  }
+  const sorted=[...rows].sort((a,b)=>b[0].localeCompare(a[0]));
+  tb.innerHTML=sorted.map(r=>{
+    const [y,m,d]=r[0].split('-');
+    const tipo=r[9]?`<span class="inc-badge dep">${r[9]}</span>`:'—';
+    return `<tr>
+      <td style="white-space:nowrap;color:#6b7280">${d}/${m}/${y}</td>
+      <td>${r[1]}</td>
+      <td><strong>${r[3]}</strong></td>
+      <td>${r[12]||'—'}</td>
+      <td>${tipo}</td>
+      <td style="max-width:280px;word-break:break-word;font-size:11px">${r[11]||'—'}</td>
+      <td>${r[10]||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
 function exportJSON(){
   const curRaw = LIVE_DATA;
   if(!curRaw.length){alert('Sin datos para exportar. Carga un Excel primero.');return;}
