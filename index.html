@@ -925,11 +925,14 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');co
     const text = await res.text();
     const data = csvToRows(text);
     if(!data.length){
-      // Log first few lines for debug
-      const firstLines = text.split('\n').slice(0,3).join(' | ');
-      console.error('CSV primeras líneas:', firstLines);
-      throw new Error('Sin datos válidos. Revisa consola para ver el formato del CSV.');
+      const firstLines = text.split('\n').slice(0,3).join('\n');
+      console.error('CSV primeras 3 líneas:\n', firstLines);
+      throw new Error('Sin datos válidos. Revisa consola (F12) para ver el formato del CSV.');
     }
+    // Log sample of incidencia data found
+    const incRows = data.filter(r=>r[9]&&r[9].length>0);
+    console.log('✅ Datos cargados:', data.length, 'filas,', incRows.length, 'con incidencia');
+    if(incRows.length) console.log('Sample incidencia:', incRows[0]);
     LIVE_DATA = data;
     console.log('\u2705 Google Sheets cargado:', data.length, 'filas');
   }catch(e){
@@ -978,12 +981,27 @@ function csvToRows(csv){
   const iHini = col('HORAINICIO');
   const iHfin = col('HRFINALIZADO');
   console.log('Columnas encontradas:', {iF,iPed,iHoj,iPick,iTur,iF2,iF3,iCli,iLT,iHini,iHfin});
-  // Columnas incidencia — calculadas UNA VEZ antes del loop
-  const iInc = hdr.findIndex(h=>h.toUpperCase().includes('INCIDENCIA'));
-  const iResp= hdr.findIndex(h=>h.toUpperCase().includes('RESPONSABLE'));
-  const iDet = hdr.findIndex(h=>h.toUpperCase().includes('DETALLE'));
-  const iMesa= col('MESA');
-  console.log('Incidencias cols:', {iInc,iResp,iDet,iMesa});
+  // Log raw headers para debug
+  console.log('CSV Headers ('+hdr.length+' cols):', hdr.slice(0,5),'...',hdr.slice(-5));
+
+  // Columnas incidencia — múltiples estrategias de búsqueda
+  const cleanH = h => h.trim().toUpperCase().replace(/[°\s\(\)"]/g,'');
+  const findCol = (...patterns) => {
+    for(const p of patterns){
+      const idx = hdr.findIndex(h => cleanH(h).includes(p) || cleanH(h) === p);
+      if(idx >= 0) return idx;
+    }
+    return -1;
+  };
+  const iInc  = findCol('INCIDENCIADEPORTADA','INCIDENCIA');
+  const iResp = findCol('RESPONSABLE7','RESPONSABLE');
+  const iDet  = findCol('DETALLEDEINCIDENCIA','DETALLE');
+  const iMesa = col('MESA');
+  console.log('Cols incidencia → iInc:'+iInc+' iResp:'+iResp+' iDet:'+iDet+' iMesa:'+iMesa);
+  // Si INCIDENCIA también matchea DETALLE DE INCIDENCIA, preferir el que NO tenga 'DETALLE'
+  const iIncFinal = (iInc >= 0 && hdr[iInc] && cleanH(hdr[iInc]).startsWith('DETALLE'))
+    ? hdr.findIndex((h,i)=>i!==iInc && cleanH(h).includes('INCIDENCIA'))
+    : iInc;
   const rows = [];
   for(let i=1;i<lines.length;i++){
     if(!lines[i].trim()) continue;
@@ -1006,7 +1024,7 @@ function csvToRows(csv){
       (f[iF3]||'').trim(),            // 6: filtro3
       (f[iCli]||'').trim(),           // 7: cliente
       lt,                             // 8: leadtime
-      (iInc>=0?f[iInc]||'':'').trim(), // 9: incidencia
+      (iIncFinal>=0?f[iIncFinal]||'':'').trim(), // 9: incidencia
       (iResp>=0?f[iResp]||'':'').trim(),// 10: responsable
       (iDet>=0?f[iDet]||'':'').trim(), // 11: detalle
       (iMesa>=0?f[iMesa]||'':'').trim()// 12: mesa
