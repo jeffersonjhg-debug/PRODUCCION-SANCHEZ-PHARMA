@@ -860,8 +860,8 @@ function parseSheetDate(s){
       // Default Peru → D/M/Y
       if(ia>12) return y+'-'+b.padStart(2,'0')+'-'+a.padStart(2,'0');
       if(ib>12) return y+'-'+a.padStart(2,'0')+'-'+b.padStart(2,'0');
-      // Ambiguo — asumir D/M/Y (Peru)
-      return y+'-'+b.padStart(2,'0')+'-'+a.padStart(2,'0');
+      // Google Sheets Peru usa M/D/Y → Mayo 4 = 5/4/26
+      return y+'-'+a.padStart(2,'0')+'-'+b.padStart(2,'0');
     }
   }
   // Formato con - (D-M-Y o M-D-Y)
